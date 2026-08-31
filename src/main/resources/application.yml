@@ -14,7 +14,5 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
-  issuer: jubjub-api
-  access-token-expiration: 1800000       # 30분
-  refresh-token-expiration: 1209600000   # 14일
+  expiration: 3600000
 
