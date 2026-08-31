@@ -25,6 +25,8 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test
+        env: # GitHub Actions에서 실행할 때만 test 프로파일을 활성화
+          SPRING_PROFILES_ACTIVE: test
 
       - name: Build JAR
         run: ./gradlew bootJar
