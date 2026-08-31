@@ -11,3 +11,10 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+
+jwt:
+  secret: ${JWT_SECRET}
+  issuer: jubjub-api
+  access-token-expiration: 1800000       # 30분
+  refresh-token-expiration: 1209600000   # 14일
+
