@@ -7,3 +7,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+ticket-server:
+  api-key: ${TICKET_SERVER_API_KEY}
