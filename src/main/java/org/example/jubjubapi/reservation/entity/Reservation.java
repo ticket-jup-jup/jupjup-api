@@ -9,6 +9,7 @@ import org.example.jubjubapi.global.entity.BaseEntity;
 import org.example.jubjubapi.reservation.exception.ReservationAlreadyFinishedException;
 import org.example.jubjubapi.reservation.exception.ReservationNotPendingException;
 import org.example.jubjubapi.ticket.entity.Ticket;
+import org.example.jubjubapi.user.entity.User;
 
 import java.time.LocalDateTime;
 
@@ -28,9 +29,9 @@ public class Reservation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // user 파트 완료되면 리팩토링 예정
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -51,17 +52,17 @@ public class Reservation extends BaseEntity {
     private Long version;
 
     @Builder
-    private Reservation(Long userId, Ticket ticketId, LocalDateTime expiresAt) {
-        this.userId = userId;
-        this.ticket = ticketId;
+    private Reservation(User user, Ticket ticket, LocalDateTime expiresAt) {
+        this.user = user;
+        this.ticket = ticket;
         this.status = ReservationStatus.PENDING;
         this.expiresAt = expiresAt;
     }
 
-    public static Reservation create(Long userId, Ticket ticket, LocalDateTime expiresAt) {
+    public static Reservation create(User user, Ticket ticket, LocalDateTime expiresAt) {
         return Reservation.builder()
-                .userId(userId)
-                .ticketId(ticket)
+                .user(user)
+                .ticket(ticket)
                 .expiresAt(expiresAt)
                 .build();
     }
@@ -98,8 +99,7 @@ public class Reservation extends BaseEntity {
         return this.expiresAt != null && this.expiresAt.isBefore(now);
     }
 
-    // user 파트 완료되면 리팩토링 예정 (this.user.getId())
     public boolean isOwnedBy(Long userId) {
-        return this.userId.equals(userId);
+        return this.user.getId().equals(userId);
     }
 }
