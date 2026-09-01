@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
 import org.example.jubjubapi.reservation.exception.ReservationAlreadyFinishedException;
 import org.example.jubjubapi.reservation.exception.ReservationNotPendingException;
+import org.example.jubjubapi.ticket.entity.Ticket;
 
 import java.time.LocalDateTime;
 
@@ -31,9 +32,10 @@ public class Reservation extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    // ticket 파트 완료 되면 리팩토링 예정
-    @Column(name = "ticket_id", nullable = false)
-    private Long ticketId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_id", nullable = false)
+    private Ticket ticket;
 
     @Column(name = "external_reservation_id")
     private Long externalReservationId; // 티켓서버 예약 id
@@ -49,17 +51,17 @@ public class Reservation extends BaseEntity {
     private Long version;
 
     @Builder
-    private Reservation(Long userId, Long ticketId, LocalDateTime expiresAt) {
+    private Reservation(Long userId, Ticket ticketId, LocalDateTime expiresAt) {
         this.userId = userId;
-        this.ticketId = ticketId;
+        this.ticket = ticketId;
         this.status = ReservationStatus.PENDING;
         this.expiresAt = expiresAt;
     }
 
-    public static Reservation create(Long userId, Long ticketId, LocalDateTime expiresAt) {
+    public static Reservation create(Long userId, Ticket ticket, LocalDateTime expiresAt) {
         return Reservation.builder()
                 .userId(userId)
-                .ticketId(ticketId)
+                .ticketId(ticket)
                 .expiresAt(expiresAt)
                 .build();
     }
