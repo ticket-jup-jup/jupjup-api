@@ -35,7 +35,7 @@ public class Payment {
     @JoinColumn(name = "reservation_id", nullable = false)
     private Reservation reservation;
 
-    @Column(name = "amount", nullable = false, length = 20)
+    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
@@ -50,7 +50,7 @@ public class Payment {
     private LocalDateTime paidAt;
 
     @CreatedDate
-    @Column(name = "creadted_at", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     @Builder
