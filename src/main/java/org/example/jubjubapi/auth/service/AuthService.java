@@ -27,7 +27,7 @@ public class AuthService {
         if(userRepository.existsByEmail(request.email())) {
             throw new DuplicateEmailException();
         }
-        String passwordHash = passwordEncoder.encode(request.passowrd());
+        String passwordHash = passwordEncoder.encode(request.password());
         User user = User.create(
                 request.email(),
                 passwordHash,
