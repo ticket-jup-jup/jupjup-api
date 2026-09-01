@@ -1,11 +1,11 @@
 package org.example.jubjubapi.reservation.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.jubjubapi.global.client.ticketserver.TicketServerReservationClient;
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
 import org.example.jubjubapi.reservation.dto.response.ReservationCreateResponse;
 import org.example.jubjubapi.reservation.entity.Reservation;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
+import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketNotAvailableException;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
-    private final TicketServerReservationClient ticketServerReservationClient;
+    private final TicketServerClient ticketServerClient;
 
     // 취소표 임시 예약 생성 -> 분산락은 별도 이슈에서 적용 예정
     @Transactional
@@ -60,7 +59,7 @@ public class ReservationService {
         ticket.updateStatus(TicketStatus.RESERVED);
 
         // 티켓 서버에 임시 예약 요청 -> externalUserId는 TicketServerAccount 연동되면 교체 예정
-        Long externalReservationId = ticketServerReservationClient.createTemporaryReservation(userId, ticket.getExternalTicketId());
+        Long externalReservationId = ticketServerClient.createTemporaryReservation(userId, ticket.getExternalTicketId());
 
         // 외부 예약 id 연결
         reservation.linkExternalReservation(externalReservationId);
