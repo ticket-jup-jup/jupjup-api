@@ -9,3 +9,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+
+jwt:
+  secret: ixiDJ646uYZDZhs7R6FmJGdhfiOVmgecx32Y6rGv7IyDS8OW4g+7flGw1se7hObS
+  expiration: 3600000
