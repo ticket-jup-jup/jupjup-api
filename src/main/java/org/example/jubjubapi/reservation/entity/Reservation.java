@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
 import org.example.jubjubapi.reservation.exception.ReservationAlreadyFinishedException;
 import org.example.jubjubapi.reservation.exception.ReservationNotPendingException;
+import org.example.jubjubapi.ticket.entity.Ticket;
+import org.example.jubjubapi.user.entity.User;
 
 import java.time.LocalDateTime;
 
@@ -27,13 +29,13 @@ public class Reservation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // user 파트 완료되면 리팩토링 예정
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    // ticket 파트 완료 되면 리팩토링 예정
-    @Column(name = "ticket_id", nullable = false)
-    private Long ticketId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ticket_id", nullable = false)
+    private Ticket ticket;
 
     @Column(name = "external_reservation_id")
     private Long externalReservationId; // 티켓서버 예약 id
@@ -49,17 +51,17 @@ public class Reservation extends BaseEntity {
     private Long version;
 
     @Builder
-    private Reservation(Long userId, Long ticketId, LocalDateTime expiresAt) {
-        this.userId = userId;
-        this.ticketId = ticketId;
+    private Reservation(User user, Ticket ticket, LocalDateTime expiresAt) {
+        this.user = user;
+        this.ticket = ticket;
         this.status = ReservationStatus.PENDING;
         this.expiresAt = expiresAt;
     }
 
-    public static Reservation create(Long userId, Long ticketId, LocalDateTime expiresAt) {
+    public static Reservation create(User user, Ticket ticket, LocalDateTime expiresAt) {
         return Reservation.builder()
-                .userId(userId)
-                .ticketId(ticketId)
+                .user(user)
+                .ticket(ticket)
                 .expiresAt(expiresAt)
                 .build();
     }
@@ -96,8 +98,7 @@ public class Reservation extends BaseEntity {
         return this.expiresAt != null && this.expiresAt.isBefore(now);
     }
 
-    // user 파트 완료되면 리팩토링 예정 (this.user.getId())
     public boolean isOwnedBy(Long userId) {
-        return this.userId.equals(userId);
+        return this.user.getId().equals(userId);
     }
 }
