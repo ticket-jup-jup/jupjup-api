@@ -39,8 +39,8 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test
-        env: # GitHub Actions에서 실행할 때만 test 프로파일을 활성화
-          SPRING_PROFILES_ACTIVE: test
-
+        env:
+          SPRING_PROFILES_ACTIVE: test # GitHub Actions에서 실행할 때만 test 프로파일을 활성화
+          TICKET_SERVER_API_KEY: test-api-key
       - name: Build JAR
         run: ./gradlew bootJar
