@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 @Component
 @Profile("!prod")
-public class FakeTicketServerClient implements TicketServerClient {
+public class FakeTicketServerReservationClient implements TicketServerReservationClient {
 
     private final AtomicLong sequence = new AtomicLong(1L);
 

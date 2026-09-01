@@ -1,6 +1,6 @@
 package org.example.jubjubapi.global.client.ticketserver;
 // 추후 패키지 이동
-public interface TicketServerClient {
+public interface TicketServerReservationClient {
 
     /**
      * 티켓 서버에 임시 예약 요청
