@@ -7,3 +7,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+ticket-server:
+  url: http://localhost:8081
+  api-key: ${TICKET_SERVER_API_KEY}
