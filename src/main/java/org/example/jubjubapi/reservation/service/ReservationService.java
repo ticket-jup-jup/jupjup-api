@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ReservationService {
 
-    private static final String LOCK_KEY_PREFIX = "lock:ticket";
+    private static final String LOCK_KEY_PREFIX = "lock:ticket:";
 
     private final DistributedLockExecutor lockExecutor;
     private final ReservationTransactionService reservationTransactionService;

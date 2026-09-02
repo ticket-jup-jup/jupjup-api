@@ -86,11 +86,11 @@ public class Payment {
         this.status = PaymentStatus.FAILED;
     }
 
-    // 결제취소처리
-    public void cancel() {
+    // 환불처리
+    public void refund() {
         if (this.status != PaymentStatus.COMPLETED) {
             throw new PaymentNotCompletedException();
         }
-        this.status = PaymentStatus.CANCELLED;
+        this.status = PaymentStatus.REFUNDED;
     }
 }
