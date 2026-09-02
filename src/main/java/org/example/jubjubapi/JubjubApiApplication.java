@@ -11,5 +11,4 @@ public class JubjubApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(JubjubApiApplication.class, args);
     }
-
 }
