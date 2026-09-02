@@ -7,12 +7,14 @@ import org.springframework.http.HttpStatus;
 public enum TicketErrorCode {
     //NOTFOUND
     WATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "WATCH_NOT_FOUND", "내 구독을 찾을 수 없습니다."),
+    TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "TICKET_NOT_FOUND", "티켓을 찾을 수 없습니다."),
     //CONFLICT
     WATCH_ALREADY_EXISTS(HttpStatus.CONFLICT,"WATCH_ALREADY_EXISTS","이미 구독 중인 티켓입니다."),
     WATCH_CONFLICT(HttpStatus.CONFLICT,"WATCH_CONFLICT", "구독 저장 중 데이터 충돌이 발생했습니다."),
     TICKET_IN_USE(HttpStatus.CONFLICT,"TICKET_IN_USE", "구독·알림·예약이 연결된 티켓은 삭제할 수 없습니다."),
     TICKET_DELETE_NOT_READY(HttpStatus.CONFLICT,"TICKET_DELETE_NOT_READY","예약 참조를 보호하는 DB 외래키 설정 후 티켓을 삭제할 수 있습니다."),
     TICKET_IN_USE_FK(HttpStatus.CONFLICT,"TICKET_IN_USE", "다른 데이터에서 참조 중인 티켓은 삭제할 수 없습니다."),
+    TICKET_NOT_AVAILABLE(HttpStatus.CONFLICT, "TICKET_NOT_AVAILABLE", "예약할 수 없는 티켓입니다."),
     //BAD_REQUEST
     INVALID_PAGINATION(HttpStatus.BAD_REQUEST,"INVALID_PAGINATION",
             "page는 0 이상, size는 1~100이어야 하며 조회 범위가 너무 크면 안 됩니다."),
