@@ -9,6 +9,8 @@ import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.entity.TicketWatch;
 import org.example.jubjubapi.ticket.entity.TicketWatchStatus;
+import org.example.jubjubapi.ticket.exception.TicketNotFoundException;
+import org.example.jubjubapi.ticket.exception.ConflictException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.ticket.repository.TicketWatchRepository;
 import org.example.jubjubapi.user.entity.User;
@@ -46,7 +48,7 @@ public class TicketService {
     public TicketResponse getTicket(Long ticketId) {
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> notFound("TICKET_NOT_FOUND", "티켓을 찾을 수 없습니다."));
+                .orElseThrow(TicketNotFoundException::new);
         return TicketResponse.from(ticket);
     }
 
@@ -56,12 +58,12 @@ public class TicketService {
         User user = findActiveUser(userId);
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
-                .orElseThrow(() -> notFound("TICKET_NOT_FOUND", "티켓을 찾을 수 없습니다."));
+                .orElseThrow(TicketNotFoundException::new);
 
         TicketWatch watch = ticketWatchRepository.findByUser_IdAndTicket_Id(userId, ticketId)
                 .orElse(null);
         if (watch != null && watch.isActive()) {
-            throw conflict("WATCH_ALREADY_EXISTS", "이미 구독 중인 티켓입니다.");
+            throw new ConflictException("WATCH_ALREADY_EXISTS", "이미 구독 중인 티켓입니다.");
         }
         if (watch == null) {
             watch = TicketWatch.create(user, ticket);
@@ -73,7 +75,7 @@ public class TicketService {
         try {
             return TicketWatchResponse.from(ticketWatchRepository.saveAndFlush(watch));
         } catch (DataIntegrityViolationException ex) {
-            throw conflict("WATCH_CONFLICT", "구독 저장 중 데이터 충돌이 발생했습니다.");
+            throw new ConflictException("WATCH_CONFLICT", "구독 저장 중 데이터 충돌이 발생했습니다.");
         }
     }
 
@@ -103,22 +105,22 @@ public class TicketService {
     public void deleteTicket(Long ticketId) {
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
-                .orElseThrow(() -> notFound("TICKET_NOT_FOUND", "티켓을 찾을 수 없습니다."));
+                .orElseThrow(TicketNotFoundException::new);
         if (ticketWatchRepository.existsByTicket_Id(ticketId)
                 //|| notificationRepository.existsByTicket_Id(ticketId)
                 || ticketRepository.countReservationReferences(ticketId) > 0) {
-            throw conflict("TICKET_IN_USE", "구독·알림·예약이 연결된 티켓은 삭제할 수 없습니다.");
+            throw new ConflictException("TICKET_IN_USE", "구독·알림·예약이 연결된 티켓은 삭제할 수 없습니다.");
         }
 
         if (ticketRepository.countRestrictiveReservationForeignKeys() == 0) {
-            throw conflict("TICKET_DELETE_NOT_READY",
+            throw new ConflictException("TICKET_DELETE_NOT_READY",
                     "예약 참조를 보호하는 DB 외래키 설정 후 티켓을 삭제할 수 있습니다.");
         }
         try {
             ticketRepository.delete(ticket);
             ticketRepository.flush();
         } catch (DataIntegrityViolationException ex) {
-            throw conflict("TICKET_IN_USE", "다른 데이터에서 참조 중인 티켓은 삭제할 수 없습니다.");
+            throw new ConflictException("TICKET_IN_USE", "다른 데이터에서 참조 중인 티켓은 삭제할 수 없습니다.");
         }
     }
     //공통함수
@@ -152,8 +154,5 @@ public class TicketService {
     private ServiceException notFound(String code, String message) {
         return new ServiceException(HttpStatus.NOT_FOUND, code, message);
     }
-    //409 CONFLICT 예외 생성
-    private ServiceException conflict(String code, String message) {
-        return new ServiceException(HttpStatus.CONFLICT, code, message);
-    }
+
 }
