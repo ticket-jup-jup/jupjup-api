@@ -1,7 +1,6 @@
 package org.example.jubjubapi.ticket.service;
 
 import lombok.RequiredArgsConstructor;
-//import org.example.jubjubapi.notification.repository.NotificationRepository;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
 import org.example.jubjubapi.ticket.dto.TicketWatchResponse;
 import org.example.jubjubapi.ticket.entity.Ticket;
@@ -9,7 +8,6 @@ import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.entity.TicketWatch;
 import org.example.jubjubapi.ticket.entity.TicketWatchStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
-import org.example.jubjubapi.ticket.exception.TicketNotFoundException;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.ticket.repository.TicketWatchRepository;
@@ -47,7 +45,7 @@ public class TicketService {
     public TicketResponse getTicket(Long ticketId) {
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(TicketNotFoundException::new);
+                .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
         return TicketResponse.from(ticket);
     }
 
@@ -57,7 +55,7 @@ public class TicketService {
         User user = findActiveUser(userId);
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
-                .orElseThrow(TicketNotFoundException::new);
+                .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
 
         TicketWatch watch = ticketWatchRepository.findByUser_IdAndTicket_Id(userId, ticketId)
                 .orElse(null);
@@ -103,7 +101,7 @@ public class TicketService {
     public void deleteTicket(Long ticketId) {
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
-                .orElseThrow(TicketNotFoundException::new);
+                .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND) );
         if (ticketWatchRepository.existsByTicket_Id(ticketId)
                 //|| notificationRepository.existsByTicket_Id(ticketId)
                 || ticketRepository.countReservationReferences(ticketId) > 0) {

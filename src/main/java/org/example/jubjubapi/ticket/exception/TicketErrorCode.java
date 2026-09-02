@@ -13,6 +13,7 @@ public enum TicketErrorCode {
     TICKET_IN_USE(HttpStatus.CONFLICT,"TICKET_IN_USE", "구독·알림·예약이 연결된 티켓은 삭제할 수 없습니다."),
     TICKET_DELETE_NOT_READY(HttpStatus.CONFLICT,"TICKET_DELETE_NOT_READY","예약 참조를 보호하는 DB 외래키 설정 후 티켓을 삭제할 수 있습니다."),
     TICKET_IN_USE_FK(HttpStatus.CONFLICT,"TICKET_IN_USE", "다른 데이터에서 참조 중인 티켓은 삭제할 수 없습니다."),
+    TICKET_NOT_AVAILABLE(HttpStatus.CONFLICT, "TICKET_NOT_AVAILABLE", "예약할 수 없는 티켓입니다."),
     //BAD_REQUEST
     INVALID_PAGINATION(HttpStatus.BAD_REQUEST,"INVALID_PAGINATION",
             "page는 0 이상, size는 1~100이어야 하며 조회 범위가 너무 크면 안 됩니다."),
@@ -23,6 +24,7 @@ public enum TicketErrorCode {
     INVALID_TICKET_PRICE(HttpStatus.BAD_REQUEST,
             "INVALID_TICKET_PRICE",
             "티켓 가격은 필수이며 0 이상이어야 합니다."),
+    TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "TICKET_NOT_FOUND", "티켓을 찾을 수 없습니다."),
     //UNAUTHORIZED
     AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED",
             "로그인이 필요합니다."),
