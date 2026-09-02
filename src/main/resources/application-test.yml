@@ -10,6 +10,11 @@ spring:
     hibernate:
       ddl-auto: create
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 jwt:
   secret: ixiDJ646uYZDZhs7R6FmJGdhfiOVmgecx32Y6rGv7IyDS8OW4g+7flGw1se7hObS
   expiration: 3600000
