@@ -8,8 +8,8 @@ import org.example.jubjubapi.reservation.repository.ReservationRepository;
 import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
-import org.example.jubjubapi.ticket.exception.TicketErrorCode;
-import org.example.jubjubapi.ticket.exception.TicketException;
+import org.example.jubjubapi.ticket.exception.TicketNotAvailableException;
+import org.example.jubjubapi.ticket.exception.TicketNotFoundException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.exception.UserNotFoundException;
@@ -42,11 +42,11 @@ public class ReservationService {
 
         // 티켓조회
         Ticket ticket = ticketRepository.findById(request.getTicketId())
-                .orElseThrow(()->new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
+                .orElseThrow(TicketNotFoundException::new);
 
         // 예약 가능 여부 확인
         if (ticket.getStatus() != TicketStatus.AVAILABLE) {
-            throw new TicketException(TicketErrorCode.TICKET_NOT_AVAILABLE);
+            throw new TicketNotAvailableException();
         }
 
         // 임시 예약 생성
