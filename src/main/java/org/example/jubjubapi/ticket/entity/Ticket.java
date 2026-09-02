@@ -7,7 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
-import org.example.jubjubapi.ticket.exception.InvalidTicketPriceException;
+import org.example.jubjubapi.ticket.exception.TicketErrorCode;
+import org.example.jubjubapi.ticket.exception.TicketException;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -79,7 +80,7 @@ public class Ticket extends BaseEntity {
         this.rowNumber = rowNumber;
         this.seatNumber = seatNumber;
         if (price == null ||price.signum() < 0) {
-            throw new InvalidTicketPriceException();
+            throw new TicketException(TicketErrorCode.INVALID_TICKET_PRICE);
         }
         this.price = price;
         // 이미 판매된 티켓도 동기화하므로 AVAILABLE을 기본값으로 삼지 않는다.
