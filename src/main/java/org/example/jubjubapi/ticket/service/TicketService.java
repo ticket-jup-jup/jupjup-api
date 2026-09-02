@@ -1,7 +1,6 @@
 package org.example.jubjubapi.ticket.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.jubjubapi.global.exception.ServiceException;
 //import org.example.jubjubapi.notification.repository.NotificationRepository;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
 import org.example.jubjubapi.ticket.dto.TicketWatchResponse;
@@ -9,8 +8,9 @@ import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.entity.TicketWatch;
 import org.example.jubjubapi.ticket.entity.TicketWatchStatus;
+import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketNotFoundException;
-import org.example.jubjubapi.ticket.exception.ConflictException;
+import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.ticket.repository.TicketWatchRepository;
 import org.example.jubjubapi.user.entity.User;
@@ -19,7 +19,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +62,7 @@ public class TicketService {
         TicketWatch watch = ticketWatchRepository.findByUser_IdAndTicket_Id(userId, ticketId)
                 .orElse(null);
         if (watch != null && watch.isActive()) {
-            throw new ConflictException("WATCH_ALREADY_EXISTS", "이미 구독 중인 티켓입니다.");
+            throw new TicketException(TicketErrorCode.WATCH_ALREADY_EXISTS);
         }
         if (watch == null) {
             watch = TicketWatch.create(user, ticket);
@@ -75,7 +74,7 @@ public class TicketService {
         try {
             return TicketWatchResponse.from(ticketWatchRepository.saveAndFlush(watch));
         } catch (DataIntegrityViolationException ex) {
-            throw new ConflictException("WATCH_CONFLICT", "구독 저장 중 데이터 충돌이 발생했습니다.");
+            throw new TicketException(TicketErrorCode.WATCH_CONFLICT);
         }
     }
 
@@ -84,8 +83,7 @@ public class TicketService {
                                                   int page, int size) {
         findActiveUser(userId);
         if (status == null) {
-            throw new ServiceException(HttpStatus.BAD_REQUEST, "INVALID_WATCH_STATUS",
-                    "구독 상태는 필수입니다.");
+            throw new TicketException(TicketErrorCode.INVALID_WATCH_STATUS);
         }
         return ticketWatchRepository.findByUser_IdAndStatus(userId, status, pageable(page, size))
                 .stream().map(TicketWatchResponse::from).toList();
@@ -96,7 +94,7 @@ public class TicketService {
         findActiveUser(userId);
         requirePositiveId(watchId);
         TicketWatch watch = ticketWatchRepository.findByIdAndUser_Id(watchId, userId)
-                .orElseThrow(() -> notFound("WATCH_NOT_FOUND", "내 구독을 찾을 수 없습니다."));
+                .orElseThrow(()->new TicketException(TicketErrorCode.WATCH_NOT_FOUND));
         // 반복 해제도 성공한다. DB 행과 과거 알림은 삭제하지 않는다.
         watch.deactivate();
     }
@@ -109,18 +107,17 @@ public class TicketService {
         if (ticketWatchRepository.existsByTicket_Id(ticketId)
                 //|| notificationRepository.existsByTicket_Id(ticketId)
                 || ticketRepository.countReservationReferences(ticketId) > 0) {
-            throw new ConflictException("TICKET_IN_USE", "구독·알림·예약이 연결된 티켓은 삭제할 수 없습니다.");
+            throw new TicketException(TicketErrorCode.TICKET_IN_USE);
         }
 
         if (ticketRepository.countRestrictiveReservationForeignKeys() == 0) {
-            throw new ConflictException("TICKET_DELETE_NOT_READY",
-                    "예약 참조를 보호하는 DB 외래키 설정 후 티켓을 삭제할 수 있습니다.");
+            throw new TicketException(TicketErrorCode.TICKET_DELETE_NOT_READY);
         }
         try {
             ticketRepository.delete(ticket);
             ticketRepository.flush();
         } catch (DataIntegrityViolationException ex) {
-            throw new ConflictException("TICKET_IN_USE", "다른 데이터에서 참조 중인 티켓은 삭제할 수 없습니다.");
+            throw new TicketException(TicketErrorCode.TICKET_IN_USE_FK);
         }
     }
     //공통함수
@@ -128,31 +125,24 @@ public class TicketService {
     //활성 사용자 조회
     private User findActiveUser(Long userId) {
         if (userId == null || userId <= 0) {
-            throw new ServiceException(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED",
-                    "로그인이 필요합니다.");
+            throw new TicketException(TicketErrorCode.AUTHENTICATION_REQUIRED);
         }
         return userRepository.findById(userId).filter(User::isActive)
-                .orElseThrow(() -> new ServiceException(HttpStatus.UNAUTHORIZED,
-                        "USER_UNAVAILABLE", "사용 가능한 회원이 아닙니다."));
+                .orElseThrow(()->new TicketException(TicketErrorCode.USER_UNAVAILABLE ));
     }
     //ID 검증
     private void requirePositiveId(Long id) {
         if (id == null || id <= 0) {
-            throw new ServiceException(HttpStatus.BAD_REQUEST, "INVALID_ID",
-                    "ID는 1 이상이어야 합니다.");
+            throw new TicketException(TicketErrorCode.INVALID_ID);
         }
     }
     //페이지 요청 객체 생성
     private Pageable pageable(int page, int size) {
         if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE) {
-            throw new ServiceException(HttpStatus.BAD_REQUEST, "INVALID_PAGINATION",
-                    "page는 0 이상, size는 1~100이어야 하며 조회 범위가 너무 크면 안 됩니다.");
+            throw new TicketException(TicketErrorCode.INVALID_PAGINATION);
         }
         return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
     }
-    //404 NOT_FOUND 예외 생성
-    private ServiceException notFound(String code, String message) {
-        return new ServiceException(HttpStatus.NOT_FOUND, code, message);
-    }
+
 
 }

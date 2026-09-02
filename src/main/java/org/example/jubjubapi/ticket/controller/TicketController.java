@@ -4,15 +4,15 @@ package org.example.jubjubapi.ticket.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.global.dto.ApiResponse;
-import org.example.jubjubapi.global.exception.ServiceException;
 import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
 import org.example.jubjubapi.ticket.dto.TicketWatchCreateRequest;
 import org.example.jubjubapi.ticket.dto.TicketWatchResponse;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.entity.TicketWatchStatus;
+import org.example.jubjubapi.ticket.exception.TicketErrorCode;
+import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.service.TicketService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -58,8 +58,7 @@ public class TicketController {
         // 현재 Role에는 USER만 있다. 인증 담당자가 ADMIN을 도입하기 전에는
         // 항상 거절한다. 메서드 보안 설정 누락 시에도 일반 사용자에게 열리지 않는다.
         if (principal.role() == null || !"ROLE_ADMIN".equals(principal.role().authority())) {
-            throw new ServiceException(HttpStatus.FORBIDDEN, "ADMIN_REQUIRED",
-                    "티켓 삭제는 관리자만 할 수 있습니다.");
+            throw new TicketException(TicketErrorCode.ADMIN_REQUIRED);
         }
         ticketService.deleteTicket(ticketId);
         return ResponseEntity.noContent().build();
@@ -106,8 +105,7 @@ public class TicketController {
     //JWT 사용자 정보 검사
     private Long requireUserId(JwtUserPrincipal principal) {
         if (principal == null || principal.userId() == null || principal.userId() <= 0) {
-            throw new ServiceException(HttpStatus.UNAUTHORIZED, "AUTHENTICATION_REQUIRED",
-                    "로그인이 필요합니다.");
+            throw new TicketException(TicketErrorCode.AUTHENTICATION_REQUIRED);
         }
         return principal.userId();
     }
