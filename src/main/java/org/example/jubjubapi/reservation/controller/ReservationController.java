@@ -7,6 +7,7 @@ import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
 import org.example.jubjubapi.reservation.dto.response.ReservationCreateResponse;
 import org.example.jubjubapi.reservation.service.ReservationService;
+import org.example.jubjubapi.reservation.service.ReservationTransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +30,7 @@ public class ReservationController {
     public ResponseEntity<ApiResponse<ReservationCreateResponse>> reserve(
             @AuthenticationPrincipal JwtUserPrincipal principal,
             @Valid @RequestBody ReservationCreateRequest request
-            ) {
+    ) {
         ReservationCreateResponse response = reservationService.reserve(principal.userId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(List.of(response)));
     }

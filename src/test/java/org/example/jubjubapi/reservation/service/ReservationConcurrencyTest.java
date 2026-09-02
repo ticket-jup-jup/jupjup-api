@@ -25,15 +25,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ActiveProfiles("test")
 @SpringBootTest
 @DisplayName("예약 동시성 테스트")
 class ReservationConcurrencyTest {
 
     private static final int THREAD_COUNT = 10;
-
-    @Autowired
-    private ReservationService reservationService;
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -46,6 +42,8 @@ class ReservationConcurrencyTest {
 
     private Ticket ticket;
     private List<Long> userIdList;
+    @Autowired
+    private ReservationService reservationService;
 
     @BeforeEach
     void setUp() {
@@ -95,6 +93,7 @@ class ReservationConcurrencyTest {
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failCount.incrementAndGet();
+                    System.out.println("실패 사유: " + e.getClass().getSimpleName());
                 } finally {
                     doneLatch.countDown();
                 }
@@ -108,6 +107,7 @@ class ReservationConcurrencyTest {
 
         // then
         long reservationCount = reservationRepository.count();
+        Ticket foundTicket = ticketRepository.findById(ticket.getId()).orElseThrow();
 
         System.out.println("== 동시성 테스트 결과 ==");
         System.out.println("요청 수: " + THREAD_COUNT);
@@ -116,5 +116,8 @@ class ReservationConcurrencyTest {
         System.out.println("생성된 예약: " + reservationCount);
 
         assertThat(reservationCount).isEqualTo(1);
+        assertThat(successCount.get()).isEqualTo(1);
+        assertThat(failCount.get()).isEqualTo(THREAD_COUNT - 1);
+        assertThat(foundTicket.getStatus()).isEqualTo(TicketStatus.RESERVED);
     }
 }
