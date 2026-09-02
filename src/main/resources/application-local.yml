@@ -8,6 +8,11 @@ spring:
     hibernate:
       ddl-auto: update
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 ticket-server:
   url: http://localhost:8081
   api-key: ${TICKET_SERVER_API_KEY}
