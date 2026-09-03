@@ -11,6 +11,9 @@ import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
+import org.example.jubjubapi.ticketserver.entity.TicketServerAccount;
+import org.example.jubjubapi.ticketserver.exception.TicketServerAccountNotLinkedException;
+import org.example.jubjubapi.ticketserver.repository.TicketServerAccountRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.exception.UserNotFoundException;
 import org.example.jubjubapi.user.repository.UserRepository;
@@ -33,8 +36,9 @@ public class ReservationTransactionService {
     private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
     private final TicketServerClient ticketServerClient;
+    private final TicketServerAccountRepository ticketServerAccountRepository;
 
-    // 취소표 임시 예약 생성 -> 분산락은 별도 이슈에서 적용 예정
+    // 취소표 임시 예약 생성
     @Transactional
     public ReservationCreateResponse reserve(Long userId, ReservationCreateRequest request) {
 
@@ -52,6 +56,10 @@ public class ReservationTransactionService {
             throw new TicketException(TicketErrorCode.TICKET_NOT_AVAILABLE);
         }
 
+        // 티켓서버 계정 연동 확인
+        TicketServerAccount account = ticketServerAccountRepository.findByUserId(userId)
+                .orElseThrow(TicketServerAccountNotLinkedException::new);
+
         // 임시 예약 생성
         LocalDateTime now = LocalDateTime.now();
         Reservation reservation = Reservation.create(user, ticket, now.plusMinutes(RESERVATION_EXPIRE_MINUTES));
@@ -61,8 +69,8 @@ public class ReservationTransactionService {
         // 티켓 상태 변경(예약)
         ticket.updateStatus(TicketStatus.RESERVED);
 
-        // 티켓 서버에 임시 예약 요청 -> externalUserId는 TicketServerAccount 연동되면 교체 예정
-        Long externalReservationId = ticketServerClient.createTemporaryReservation(userId, ticket.getExternalTicketId());
+        // 티켓 서버에 임시 예약 요청
+        Long externalReservationId = ticketServerClient.createTemporaryReservation(account.getExternalUserId(), ticket.getExternalTicketId());
 
         // 외부 예약 id 연결
         reservation.linkExternalReservation(externalReservationId);
