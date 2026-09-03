@@ -1,23 +1,20 @@
 package org.example.jubjubapi.reservation.dto.response;
 
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import org.example.jubjubapi.reservation.entity.Reservation;
 import org.example.jubjubapi.reservation.entity.ReservationStatus;
 
 import java.time.LocalDateTime;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReservationCreateResponse {
 
-    private Long reservationId;
-    private Long ticketId;
-    private ReservationStatus status;
-    private LocalDateTime expiresAt;
-    private LocalDateTime createdAt;
+    private final Long reservationId;
+    private final Long ticketId;
+    private final ReservationStatus status;
+    private final LocalDateTime expiresAt;
+    private final LocalDateTime createdAt;
 
     @Builder
     private ReservationCreateResponse(Long reservationId, Long ticketId, ReservationStatus status, LocalDateTime expiresAt, LocalDateTime createdAt) {

@@ -3,7 +3,9 @@ package org.example.jubjubapi.reservation.service;
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
 import org.example.jubjubapi.reservation.dto.response.ReservationCreateResponse;
+import org.example.jubjubapi.reservation.dto.response.ReservationGetResponse;
 import org.example.jubjubapi.reservation.entity.Reservation;
+import org.example.jubjubapi.reservation.exception.InvalidPageRequestException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
 import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
@@ -17,20 +19,27 @@ import org.example.jubjubapi.ticketserver.repository.TicketServerAccountReposito
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.exception.UserNotFoundException;
 import org.example.jubjubapi.user.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 트랜잭션 담당 클래스
  */
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ReservationTransactionService {
 
     // 임시 예약 유효 시간
     private static final int RESERVATION_EXPIRE_MINUTES = 10;
+    // 한 번에 조회 가능한 최대 개수 (페이징)
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
@@ -39,7 +48,6 @@ public class ReservationTransactionService {
     private final TicketServerAccountRepository ticketServerAccountRepository;
 
     // 취소표 임시 예약 생성
-    @Transactional
     public ReservationCreateResponse reserve(Long userId, ReservationCreateRequest request) {
 
         // 유저조회
@@ -76,5 +84,23 @@ public class ReservationTransactionService {
         reservation.linkExternalReservation(externalReservationId);
 
         return ReservationCreateResponse.from(reservation);
+    }
+
+    // 나의 예약 전체 조회
+    @Transactional(readOnly = true)
+    public List<ReservationGetResponse> getMyReservation(Long userId, int page, int size) {
+        Pageable pageable = toPageable(page, size);
+        List<Reservation> reservations = reservationRepository.findAllByUserId(userId, pageable);
+
+        return reservations.stream()
+                .map(ReservationGetResponse::from)
+                .toList();
+    }
+
+    private Pageable toPageable(int page, int size) {
+        if (page < 0 || size < 1 || size > MAX_PAGE_SIZE) {
+            throw new InvalidPageRequestException();
+        }
+        return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
     }
 }
