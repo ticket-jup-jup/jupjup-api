@@ -1,8 +1,13 @@
 package org.example.jubjubapi.ticket.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.jubjubapi.ticket.client.dto.request.TicketServerReservationRequest;
+import org.example.jubjubapi.ticket.client.dto.response.TicketServerReservationResponse;
+import org.example.jubjubapi.ticket.exception.TicketErrorCode;
+import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
@@ -10,24 +15,22 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 @Component
 public class TicketServerClient {
 
     private final RestClient restClient;
-    // 티켓서버 연동 후 제거 예정
-    private final AtomicLong temporarySequence = new AtomicLong(System.currentTimeMillis());
 
     public TicketServerClient(
             RestClient.Builder restClientBuilder,
             @Value("${ticket-server.url}") String url,
-            @Value("${ticket-server.api-key}") String apiKey
-    ) {
+            @Value("${ticket-server.api-key}") String apiKey,
+            ClientHttpRequestFactory ticketServerRequestFactory) {
         this.restClient = restClientBuilder
                 .baseUrl(url)
                 .defaultHeader("X-API-KEY", apiKey)
+                .requestFactory(ticketServerRequestFactory)
                 .build();
     }
 
@@ -70,11 +73,29 @@ public class TicketServerClient {
     public record TicketServerUser(Long userId, String email, String name) {
     }
 
-    // 티켓 서버 API 구현 후 HTTP 호출로 교체 예정
+    // 임시 예약 요청
     public Long createTemporaryReservation(Long externalUserId, Long externalTicketId) {
-        long externalReservationId = temporarySequence.getAndIncrement();
-        log.info("[임시] 임시예약 요청 - userId={}, ticketId={} -> reservationId={}", externalUserId, externalTicketId, externalReservationId);
-        return externalReservationId;
+        TicketServerReservationResponse response;
+        try {
+            response = restClient.post()
+                    .uri("/api/reservations")
+                    .body(new TicketServerReservationRequest(externalUserId, externalTicketId))
+                    .retrieve()
+                    .body(TicketServerReservationResponse.class);
+        } catch (HttpClientErrorException e) {
+            log.warn("티켓서버 임시예약 거부: status={}, userId={}, ticketId={}", e.getStatusCode(), externalUserId, externalTicketId);
+            throw new TicketException(TicketErrorCode.TICKET_NOT_AVAILABLE);
+        } catch (RestClientException e) {
+            log.error("티켓서버 통신 실패: userId={}, ticketId={}, message={}", externalUserId, externalTicketId, e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if(response == null || !response.isValid()) {
+            log.warn("티켓서버 임시예약 응답형식 오류: userId={}, ticketId={}", externalUserId, externalTicketId);
+            throw new TicketServerUnavailableException();
+        }
+
+        return response.extractReservationId();
     }
 
     // 티켓 서버 API 구현 후 HTTP 호출로 교체 예정

@@ -1,4 +1,4 @@
-package org.example.jubjubapi.repository;
+package org.example.jubjubapi.payment.repository;
 
 import org.example.jubjubapi.payment.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -2,9 +2,12 @@ package org.example.jubjubapi.reservation.service;
 
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
+import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
+import org.example.jubjubapi.ticketserver.entity.TicketServerAccount;
+import org.example.jubjubapi.ticketserver.repository.TicketServerAccountRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,14 +25,20 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
 @DisplayName("예약 동시성 테스트")
 class ReservationConcurrencyTest {
 
     private static final int THREAD_COUNT = 10;
+
+    @Autowired
+    private ReservationService reservationService;
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -40,14 +49,22 @@ class ReservationConcurrencyTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TicketServerAccountRepository ticketServerAccountRepository;
+
+    @MockitoBean
+    private TicketServerClient ticketServerClient;
+
     private Ticket ticket;
     private List<Long> userIdList;
-    @Autowired
-    private ReservationService reservationService;
 
     @BeforeEach
     void setUp() {
         reservationRepository.deleteAll();
+
+        AtomicLong sequence = new AtomicLong(System.currentTimeMillis());
+        given(ticketServerClient.createTemporaryReservation(any(), any()))
+                .willAnswer(invocation -> sequence.getAndIncrement());
 
         // 예약 가능한 티켓 1장
         ticket = ticketRepository.save(Ticket.builder()
@@ -62,10 +79,11 @@ class ReservationConcurrencyTest {
                 .build()
         );
 
-        // 서로 다른 사용자 10명 생성
+        // 서로 다른 사용자 10명, 티켓서버 계정 연동 정보 생성
         userIdList = new ArrayList<>();
         for (int i = 0; i < THREAD_COUNT; i++) {
             User user = userRepository.save(User.create("concurrency" + System.nanoTime() + "@test.com", "encoded", "테스터" + i));
+            ticketServerAccountRepository.save(TicketServerAccount.link(user, System.nanoTime()));
             userIdList.add(user.getId());
         }
     }
