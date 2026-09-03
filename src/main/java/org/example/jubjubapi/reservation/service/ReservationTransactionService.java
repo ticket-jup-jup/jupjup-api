@@ -6,6 +6,8 @@ import org.example.jubjubapi.reservation.dto.response.ReservationCreateResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationGetResponse;
 import org.example.jubjubapi.reservation.entity.Reservation;
 import org.example.jubjubapi.reservation.exception.InvalidPageRequestException;
+import org.example.jubjubapi.reservation.exception.ReservationAccessDeniedException;
+import org.example.jubjubapi.reservation.exception.ReservationNotFoundException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
 import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
@@ -95,6 +97,19 @@ public class ReservationTransactionService {
         return reservations.stream()
                 .map(ReservationGetResponse::from)
                 .toList();
+    }
+
+    // 예약 단건 조회
+    @Transactional(readOnly = true)
+    public ReservationGetResponse getReservation(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findByIdWithTicket(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+
+        // 나의 예약인지 검증
+        if (!reservation.isOwnedBy(userId)) {
+            throw new ReservationAccessDeniedException();
+        }
+        return ReservationGetResponse.from(reservation);
     }
 
     private Pageable toPageable(int page, int size) {

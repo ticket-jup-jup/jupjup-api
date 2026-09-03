@@ -40,9 +40,17 @@ public class ReservationController {
             @AuthenticationPrincipal JwtUserPrincipal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(ApiResponse.success(reservationTransactionService.getMyReservation(principal.userId(), page, size)));
+        List<ReservationGetResponse> response = reservationTransactionService.getMyReservation(principal.userId(), page, size);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 예약 단건 조회
-
+    @GetMapping("/{reservationId}")
+    public ResponseEntity<ApiResponse<ReservationGetResponse>> getOneReservation(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @PathVariable Long reservationId
+    ) {
+        ReservationGetResponse response = reservationTransactionService.getReservation(principal.userId(), reservationId);
+        return ResponseEntity.ok(ApiResponse.success(List.of(response)));
+    }
 }
