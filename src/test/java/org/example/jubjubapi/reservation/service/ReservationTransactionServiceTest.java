@@ -1,11 +1,15 @@
 package org.example.jubjubapi.reservation.service;
 
+import org.example.jubjubapi.reservation.dto.response.ReservationCancelResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationGetResponse;
 import org.example.jubjubapi.reservation.entity.Reservation;
+import org.example.jubjubapi.reservation.entity.ReservationStatus;
 import org.example.jubjubapi.reservation.exception.InvalidPageRequestException;
 import org.example.jubjubapi.reservation.exception.ReservationAccessDeniedException;
+import org.example.jubjubapi.reservation.exception.ReservationAlreadyFinishedException;
 import org.example.jubjubapi.reservation.exception.ReservationNotFoundException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
+import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
@@ -17,7 +21,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,11 +29,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
-@Transactional
 @SpringBootTest(properties = "spring.datasource.url=jdbc:mysql://localhost:3306/jupjup_test?createDatabaseIfNotExist=true")
-@DisplayName("예약 조회 테스트")
+@DisplayName("예약 조회/취소 테스트")
 class ReservationTransactionServiceTest {
 
     @Autowired
@@ -48,6 +52,8 @@ class ReservationTransactionServiceTest {
     private User other;
     private Reservation myReservation;
     private Reservation otherReservation;
+    @MockitoBean
+    private TicketServerClient ticketServerClient;
 
     @BeforeEach
     void setUp() {
@@ -115,6 +121,45 @@ class ReservationTransactionServiceTest {
                 .isInstanceOf(InvalidPageRequestException.class);
     }
 
+    @Test
+    @DisplayName("예약을 취소하면 티켓 상태가 예약 가능으로 복구된다.")
+    void 취소_성공() {
+        //when
+        ReservationCancelResponse response = reservationTransactionService.cancel(me.getId(), myReservation.getId());
+
+        //then
+        assertThat(response.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+        Ticket foundTicket = ticketRepository.findById(myReservation.getTicket().getId()).orElseThrow();
+        assertThat(foundTicket.getStatus()).isEqualTo(TicketStatus.AVAILABLE);
+
+        verify(ticketServerClient).cancelReservation(any());
+    }
+
+    @Test
+    @DisplayName("이미 취소된 예약은 다시 취소할 수 없다.")
+    void 취소_중복() {
+        //given
+        reservationTransactionService.cancel(me.getId(), myReservation.getId());
+
+        //when,then
+        assertThatThrownBy(() -> reservationTransactionService.cancel(me.getId(), myReservation.getId()))
+                .isInstanceOf(ReservationAlreadyFinishedException.class);
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 예약은 취소할 수 없다.")
+    void 취소_권한_없음() {
+        assertThatThrownBy(() -> reservationTransactionService.cancel(me.getId(), otherReservation.getId()))
+                .isInstanceOf(ReservationAccessDeniedException.class);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 예약을 취소하면 예외가 발생한다.")
+    void 취소_없는_예약() {
+        assertThatThrownBy(() -> reservationTransactionService.cancel(me.getId(), 12345L))
+                .isInstanceOf(ReservationNotFoundException.class);
+    }
+
     private Reservation createReservation(User user, String programName) {
         Ticket ticket = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
@@ -124,7 +169,7 @@ class ReservationTransactionServiceTest {
                 .venue("테스트 공연장")
                 .seatGrade("VIP")
                 .price(new BigDecimal("100000.00"))
-                .status(TicketStatus.AVAILABLE)
+                .status(TicketStatus.RESERVED)
                 .build());
 
         return reservationRepository.save(
