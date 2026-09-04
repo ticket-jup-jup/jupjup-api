@@ -74,7 +74,7 @@ public class Reservation extends BaseEntity {
     // 결제 완료후 예약 확정
     public void confirm() {
         if (this.status != ReservationStatus.PENDING) {
-            throw new ReservationNotPendingException();
+            throw new ReservationNotPendingException("결제 대기 중인 예약이 아닙니다.");
         }
         this.status = ReservationStatus.CONFIRMED;
     }
@@ -82,7 +82,7 @@ public class Reservation extends BaseEntity {
     // 만료 시간 초과로 인한 자동 만료 (스케줄러 구현 후 호출 예정)
     public void expire() {
         if (this.status != ReservationStatus.PENDING) {
-            throw new ReservationNotPendingException();
+            throw new ReservationNotPendingException("결제 만료된 예약입니다.");
         }
         this.status = ReservationStatus.EXPIRED;
     }
