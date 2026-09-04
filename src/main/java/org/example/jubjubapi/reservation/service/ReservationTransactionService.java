@@ -2,6 +2,7 @@ package org.example.jubjubapi.reservation.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
+import org.example.jubjubapi.reservation.dto.response.ReservationCancelResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationCreateResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationGetResponse;
 import org.example.jubjubapi.reservation.entity.Reservation;
@@ -107,9 +108,32 @@ public class ReservationTransactionService {
 
         // 나의 예약인지 검증
         if (!reservation.isOwnedBy(userId)) {
-            throw new ReservationAccessDeniedException();
+            throw new ReservationAccessDeniedException("본인의 예약만 조회할 수 있습니다.");
         }
         return ReservationGetResponse.from(reservation);
+    }
+
+    // 예약 취소
+    public ReservationCancelResponse cancel(Long userId, Long reservationId) {
+        // 예약 조회 검증
+        Reservation reservation = reservationRepository.findByIdWithTicket(reservationId)
+                .orElseThrow(ReservationNotFoundException::new);
+
+        // 소유자 검증
+        if (!reservation.isOwnedBy(userId)) {
+            throw new ReservationAccessDeniedException("다른 사람의 예약을 삭제할 수 없습니다.");
+        }
+
+        // 예약 상태 변경
+        reservation.cancel();
+
+        // 티켓 상태 복구
+        reservation.getTicket().updateStatus(TicketStatus.AVAILABLE);
+
+        // 티켓 서버 취소 API 호출
+        ticketServerClient.cancelReservation(reservation.getExternalReservationId());
+
+        return ReservationCancelResponse.from(reservation);
     }
 
     private Pageable toPageable(int page, int size) {

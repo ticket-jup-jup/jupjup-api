@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.global.dto.ApiResponse;
 import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
+import org.example.jubjubapi.reservation.dto.response.ReservationCancelResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationCreateResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationGetResponse;
 import org.example.jubjubapi.reservation.service.ReservationService;
@@ -53,4 +54,15 @@ public class ReservationController {
         ReservationGetResponse response = reservationTransactionService.getReservation(principal.userId(), reservationId);
         return ResponseEntity.ok(ApiResponse.success(List.of(response)));
     }
+
+    // 예약 취소
+    @PostMapping("/{reservationId}/cancel")
+    public ResponseEntity<ApiResponse<ReservationCancelResponse>> cancel(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @PathVariable Long reservationId
+    ) {
+        ReservationCancelResponse response = reservationTransactionService.cancel(principal.userId(), reservationId);
+        return ResponseEntity.ok(ApiResponse.success(List.of(response)));
+    }
+
 }
