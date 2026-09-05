@@ -1,10 +1,14 @@
 package org.example.jubjubapi.payment.service;
 
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
+import org.example.jubjubapi.payment.dto.response.PaymentCancelResponse;
 import org.example.jubjubapi.payment.dto.response.PaymentCreateResponse;
 import org.example.jubjubapi.payment.dto.response.PaymentGetResponse;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
 import org.example.jubjubapi.payment.entity.PaymentStatus;
+import org.example.jubjubapi.payment.exception.PaymentAccessDeniedException;
+import org.example.jubjubapi.payment.exception.PaymentNotCompletedException;
+import org.example.jubjubapi.payment.exception.PaymentNotFoundException;
 import org.example.jubjubapi.payment.repository.PaymentRepository;
 import org.example.jubjubapi.reservation.entity.Reservation;
 import org.example.jubjubapi.reservation.entity.ReservationStatus;
@@ -213,6 +217,55 @@ class PaymentServiceTest {
 
         //then
         assertThat(result.size()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("결제를 취소하면 환불처리되고 예약과 티켓이 복구된다.")
+    void 결제_취소_성공() {
+        //given
+        PaymentCreateResponse createdPayment = paymentService.pay(me.getId(), new PaymentCreateRequest(myReservation.getId(), PaymentMethod.CARD));
+
+        //when
+        PaymentCancelResponse response = paymentTransactionService.cancel(me.getId(), createdPayment.getId());
+
+        //then
+        assertThat(response.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+
+        Reservation found = reservationRepository.findByIdWithTicket(myReservation.getId()).orElseThrow();
+        assertThat(found.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+        assertThat(found.getTicket().getStatus()).isEqualTo(TicketStatus.AVAILABLE);
+
+        verify(ticketServerClient).cancelReservation(any());
+    }
+
+    @Test
+    @DisplayName("이미 환불된 결제는 다시 취소할 수 없다.")
+    void 결제_취소_중복() {
+        //given
+        PaymentCreateResponse createdPayment = paymentService.pay(me.getId(), new PaymentCreateRequest(myReservation.getId(), PaymentMethod.CARD));
+        paymentTransactionService.cancel(me.getId(), createdPayment.getId());
+
+        //when,then
+        assertThatThrownBy(() -> paymentTransactionService.cancel(me.getId(), createdPayment.getId()))
+                .isInstanceOf(PaymentNotCompletedException.class);
+    }
+
+    @Test
+    @DisplayName("다른 사용자의 결제는 취소할 수 없다.")
+    void 결제_취소_권한_없음() {
+        //given
+        PaymentCreateResponse createdPayment = paymentService.pay(me.getId(), new PaymentCreateRequest(myReservation.getId(), PaymentMethod.CARD));
+
+        //when,then
+        assertThatThrownBy(() -> paymentTransactionService.cancel(other.getId(), createdPayment.getId()))
+                .isInstanceOf(PaymentAccessDeniedException.class);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 결제를 취소하면 예외가 발생한다.")
+    void 존재하지_않는_결제_취소() {
+        assertThatThrownBy(() -> paymentTransactionService.cancel(me.getId(), 999999L))
+                .isInstanceOf(PaymentNotFoundException.class);
     }
 
     private Reservation createReservation(User user) {

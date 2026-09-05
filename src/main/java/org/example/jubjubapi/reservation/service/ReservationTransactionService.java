@@ -6,8 +6,10 @@ import org.example.jubjubapi.reservation.dto.response.ReservationCancelResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationCreateResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationGetResponse;
 import org.example.jubjubapi.reservation.entity.Reservation;
+import org.example.jubjubapi.reservation.entity.ReservationStatus;
 import org.example.jubjubapi.reservation.exception.InvalidPageRequestException;
 import org.example.jubjubapi.reservation.exception.ReservationAccessDeniedException;
+import org.example.jubjubapi.reservation.exception.ReservationAlreadyPaidException;
 import org.example.jubjubapi.reservation.exception.ReservationNotFoundException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
 import org.example.jubjubapi.ticket.client.TicketServerClient;
@@ -121,10 +123,13 @@ public class ReservationTransactionService {
 
         // 소유자 검증
         if (!reservation.isOwnedBy(userId)) {
-            throw new ReservationAccessDeniedException("다른 사람의 예약을 삭제할 수 없습니다.");
+            throw new ReservationAccessDeniedException("다른 사람의 예약을 취소할 수 없습니다.");
         }
 
-        // 예약 상태 변경
+        // 예약 상태 검증 후 변경
+        if(reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            throw new ReservationAlreadyPaidException();
+        }
         reservation.cancel();
 
         // 티켓 상태 복구
