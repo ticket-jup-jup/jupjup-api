@@ -27,5 +27,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
             "join fetch r.ticket " +
             "where r.user.id = :userId"
     )
-    Optional<List<Payment>> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+    List<Payment> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
 }

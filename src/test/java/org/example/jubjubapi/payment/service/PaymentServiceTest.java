@@ -2,6 +2,7 @@ package org.example.jubjubapi.payment.service;
 
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
 import org.example.jubjubapi.payment.dto.response.PaymentCreateResponse;
+import org.example.jubjubapi.payment.dto.response.PaymentGetResponse;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
 import org.example.jubjubapi.payment.entity.PaymentStatus;
 import org.example.jubjubapi.payment.repository.PaymentRepository;
@@ -25,6 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,6 +58,9 @@ class PaymentServiceTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PaymentTransactionService paymentTransactionService;
 
     @MockitoBean
     private TicketServerClient ticketServerClient;
@@ -110,22 +115,6 @@ class PaymentServiceTest {
                 .isInstanceOf(ReservationNotPendingException.class);
     }
 
-    private Reservation createReservation(User user) {
-        Ticket ticket = ticketRepository.save(Ticket.builder()
-                .externalTicketId(System.nanoTime())
-                .performanceId(1L)
-                .programName("테스트 공연")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
-                .seatGrade("VIP")
-                .price(TICKET_PRICE)
-                .status(TicketStatus.RESERVED)
-                .build());
-
-        return reservationRepository.save(
-                Reservation.create(user, ticket, LocalDateTime.now().plusMinutes(10)));
-    }
-
     @Test
     @DisplayName("같은 예약에 동시에 결제 요청이 오면 1건만 성공한다.")
     void 동시_결제_테스트() throws InterruptedException {
@@ -172,5 +161,73 @@ class PaymentServiceTest {
 
         // 티켓서버 확정은 한 번만 호출되어야 이중 결제가 아님
         verify(ticketServerClient, times(1)).confirmReservation(any(), any());
+    }
+
+    @Test
+    @DisplayName("본인 결제를 조회하면 티켓 정보와 함께 1건 반환한다")
+    void 결제_조회_성공() {
+        //given
+        PaymentCreateResponse created = paymentService.pay(me.getId(), new PaymentCreateRequest(myReservation.getId(), PaymentMethod.CASH));
+
+        //when
+        PaymentGetResponse result = paymentTransactionService.getOnePayment(me.getId(), created.getId());
+
+        //then
+        assertThat(result.getId()).isEqualTo(created.getId());
+        assertThat(result.getTicket().getProgramName()).isEqualTo("테스트 공연");
+    }
+
+    @Test
+    @DisplayName("본인 결제를 전체 조회하면 티켓 정보와 함께 전체 반환된다.")
+    void 결제_전체_조회_성공() {
+        Ticket ticket2 = ticketRepository.save(Ticket.builder()
+                .externalTicketId(System.nanoTime())
+                .performanceId(1L)
+                .programName("테스트 공연2")
+                .startAt(LocalDateTime.now().plusDays(30))
+                .venue("테스트 공연장")
+                .seatGrade("VIP")
+                .price(TICKET_PRICE)
+                .status(TicketStatus.RESERVED)
+                .build());
+        Ticket ticket3 = ticketRepository.save(Ticket.builder()
+                .externalTicketId(System.nanoTime())
+                .performanceId(1L)
+                .programName("테스트 공연3")
+                .startAt(LocalDateTime.now().plusDays(30))
+                .venue("테스트 공연장")
+                .seatGrade("VIP")
+                .price(TICKET_PRICE)
+                .status(TicketStatus.RESERVED)
+                .build());
+
+        Reservation reservation1 = reservationRepository.save(Reservation.create(me, ticket2, LocalDateTime.now().plusMinutes(10)));
+        Reservation reservation2 = reservationRepository.save(Reservation.create(me, ticket3, LocalDateTime.now().plusMinutes(10)));
+
+        paymentService.pay(me.getId(), new PaymentCreateRequest(myReservation.getId(), PaymentMethod.CASH));
+        paymentService.pay(me.getId(), new PaymentCreateRequest(reservation1.getId(), PaymentMethod.CASH));
+        paymentService.pay(me.getId(), new PaymentCreateRequest(reservation2.getId(), PaymentMethod.CASH));
+
+        //when
+        List<PaymentGetResponse> result = paymentTransactionService.getAllPayment(me.getId(), 0, 3);
+
+        //then
+        assertThat(result.size()).isEqualTo(3);
+    }
+
+    private Reservation createReservation(User user) {
+        Ticket ticket = ticketRepository.save(Ticket.builder()
+                .externalTicketId(System.nanoTime())
+                .performanceId(1L)
+                .programName("테스트 공연")
+                .startAt(LocalDateTime.now().plusDays(30))
+                .venue("테스트 공연장")
+                .seatGrade("VIP")
+                .price(TICKET_PRICE)
+                .status(TicketStatus.RESERVED)
+                .build());
+
+        return reservationRepository.save(
+                Reservation.create(user, ticket, LocalDateTime.now().plusMinutes(10)));
     }
 }
