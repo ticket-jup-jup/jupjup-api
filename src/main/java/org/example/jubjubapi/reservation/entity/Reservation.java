@@ -87,9 +87,8 @@ public class Reservation extends BaseEntity {
         this.status = ReservationStatus.EXPIRED;
     }
 
-    // 예약 취소 => 결제 API 작업시 CONFIRMED 상태 취소(환불) 구현 예정
     public void cancel() {
-        if (this.status != ReservationStatus.PENDING) {
+        if (this.status == ReservationStatus.EXPIRED || this.status == ReservationStatus.CANCELLED) {
             throw new ReservationAlreadyFinishedException();
         }
         this.status = ReservationStatus.CANCELLED;

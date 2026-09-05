@@ -10,6 +10,7 @@ import org.example.jubjubapi.ticketserver.entity.TicketServerAccount;
 import org.example.jubjubapi.ticketserver.repository.TicketServerAccountRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.datasource.url=jdbc:mysql://localhost:3306/jupjup_test?createDatabaseIfNotExist=true")
 @DisplayName("예약 동시성 테스트")
 class ReservationConcurrencyTest {
 
@@ -86,6 +87,14 @@ class ReservationConcurrencyTest {
             ticketServerAccountRepository.save(TicketServerAccount.link(user, System.nanoTime()));
             userIdList.add(user.getId());
         }
+    }
+
+    @AfterEach
+    void tearDown() {
+        reservationRepository.deleteAll();
+        ticketServerAccountRepository.deleteAll();
+        ticketRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
