@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.global.dto.ApiResponse;
 import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
+import org.example.jubjubapi.payment.dto.response.PaymentCancelResponse;
 import org.example.jubjubapi.payment.dto.response.PaymentGetResponse;
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
 import org.example.jubjubapi.payment.dto.response.PaymentCreateResponse;
@@ -53,5 +54,15 @@ public class PaymentController {
     ) {
         List<PaymentGetResponse> response = paymentTransactionService.getAllPayment(principal.userId(), page, size);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 결제취소(환불)
+    @PostMapping("/{paymentId}/cancel")
+    public ResponseEntity<ApiResponse<PaymentCancelResponse>> cancel(
+            @AuthenticationPrincipal JwtUserPrincipal principal,
+            @PathVariable Long paymentId
+    ) {
+        PaymentCancelResponse response = paymentTransactionService.cancel(principal.userId(), paymentId);
+        return ResponseEntity.ok(ApiResponse.success(List.of(response)));
     }
 }

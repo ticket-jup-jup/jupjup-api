@@ -2,6 +2,7 @@ package org.example.jubjubapi.payment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
+import org.example.jubjubapi.payment.dto.response.PaymentCancelResponse;
 import org.example.jubjubapi.payment.dto.response.PaymentCreateResponse;
 import org.example.jubjubapi.payment.dto.response.PaymentGetResponse;
 import org.example.jubjubapi.payment.entity.Payment;
@@ -93,6 +94,33 @@ public class PaymentTransactionService {
         return payments.stream()
                 .map(PaymentGetResponse::from)
                 .toList();
+    }
+
+    // 결제취소(환불)
+    public PaymentCancelResponse cancel(Long userId, Long paymentId) {
+        // 결제조회
+        Payment payment = paymentRepository.findByIdWithReservationAndTicket(paymentId)
+                .orElseThrow(PaymentNotFoundException::new);
+        Reservation reservation = payment.getReservation();
+
+        // 소유자검증
+        if (!reservation.isOwnedBy(userId)) {
+            throw new PaymentAccessDeniedException();
+        }
+
+        // 환불처리
+        payment.refund();
+
+        // 예약취소
+        reservation.cancel();
+
+        // 티켓복구
+        reservation.getTicket().updateStatus(TicketStatus.AVAILABLE);
+
+        // 티켓서버 취소 요청
+        ticketServerClient.cancelReservation(reservation.getExternalReservationId());
+
+        return PaymentCancelResponse.from(payment);
     }
 
     private Pageable toPageable(int page, int size) {
