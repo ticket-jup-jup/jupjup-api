@@ -10,6 +10,11 @@ spring:
     hibernate:
       ddl-auto: create
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    listener:
+      auto-startup: false
+
 jwt:
   secret: ixiDJ646uYZDZhs7R6FmJGdhfiOVmgecx32Y6rGv7IyDS8OW4g+7flGw1se7hObS
   expiration: 3600000
@@ -17,3 +22,4 @@ jwt:
 ticket-server:
   url: http://localhost:8081
   api-key: ${TICKET_SERVER_API_KEY}
+

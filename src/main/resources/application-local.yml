@@ -17,6 +17,22 @@ spring:
       host: localhost
       port: 6379
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: jupjup-notification
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "org.example.jubjubapi.*"
+
 ticket-server:
   url: http://localhost:8081
   api-key: ${TICKET_SERVER_API_KEY}
+
+notification:
+  stub-user-ids: ""        # 세션 4 e2e 검증용. 예지님 파트 구현 후 삭제
