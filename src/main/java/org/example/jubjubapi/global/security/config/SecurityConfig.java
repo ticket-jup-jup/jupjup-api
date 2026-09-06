@@ -55,6 +55,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/signin").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+
+                        // ticket-server가 호출하는 Webhook
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/internal/webhooks/tickets"
+                        ).permitAll()
+
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, AnonymousAuthenticationFilter.class)
