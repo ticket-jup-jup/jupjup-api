@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.example.jubjubapi.ticket.client.dto.response.TicketServerTicketListResponse;
+import org.example.jubjubapi.ticket.client.dto.response.TicketServerTicketResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -132,6 +134,34 @@ public class TicketServerClient {
         } catch (RestClientException e) {
             log.error("티켓서버 통신 실패: externalReservationId={}, message={}", externalReservationId, e.getMessage());
             throw new TicketServerApiException();
+        }
+    }
+    // Polling용 티켓 상태 조회
+    public List<TicketServerTicketResponse> getInternalTickets(Long performanceId) {
+
+        try {
+            TicketServerTicketListResponse response = restClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/internal/tickets")
+                            .queryParam("performance", performanceId)
+                            .build())
+                    .retrieve()
+                    .body(TicketServerTicketListResponse.class);
+
+            if (response == null || response.getData() == null) {
+                return List.of();
+            }
+
+            return response.getData();
+
+        } catch (RestClientException e) {
+            log.warn(
+                    "티켓서버 Polling 실패: performanceId={}, message={}",
+                    performanceId,
+                    e.getMessage()
+            );
+
+            throw new TicketServerUnavailableException();
         }
     }
 }

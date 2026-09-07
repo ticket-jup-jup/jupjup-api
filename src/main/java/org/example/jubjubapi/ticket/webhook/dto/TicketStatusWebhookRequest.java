@@ -1,15 +1,20 @@
 package org.example.jubjubapi.ticket.webhook.dto;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 
-public record TicketStatusWebhookRequest (
-    @NotNull
-    Long externalTicketId,
+@Getter
+@NoArgsConstructor
+public class TicketStatusWebhookRequest {
 
     @NotNull
-    Long performanceId,
+    private Long externalTicketId;
 
     @NotNull
-    TicketStatus status
-){}
+    private Long performanceId;
+
+    @NotNull
+    private TicketStatus status;
+}

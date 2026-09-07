@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,4 +32,15 @@ public interface TicketWatchRepository extends JpaRepository<TicketWatch, Long> 
     @EntityGraph(attributePaths = {"user", "ticket"})
     List<TicketWatch> findByTicket_IdAndStatus(
             Long ticketId, TicketWatchStatus status);
+
+    /*알림 구독 시 회차 기준으로 가져올 쿼리
+    * 이후 테이블 구조 변경(performance 추가)예정*/
+    @Query("""
+        select distinct tw.ticket.performanceId
+        from TicketWatch tw
+        where tw.status = :status
+        """)
+    List<Long> findDistinctPerformanceIdsByStatus(
+            @Param("status") TicketWatchStatus status
+    );
 }

@@ -20,3 +20,8 @@ spring:
 ticket-server:
   url: http://localhost:8081
   api-key: ${TICKET_SERVER_API_KEY}
+
+
+  ticket:
+    polling:
+      fixed-delay-ms: 10000

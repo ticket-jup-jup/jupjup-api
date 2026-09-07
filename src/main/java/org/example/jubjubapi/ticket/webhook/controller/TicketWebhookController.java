@@ -24,8 +24,8 @@ public class TicketWebhookController {
     ) {
 
         ticketStatusSyncService.syncStatus(
-                request.externalTicketId(),
-                request.status(),
+                request.getExternalTicketId(),
+                request.getStatus(),
                 TicketDetectionSource.WEBHOOK
         );
 
