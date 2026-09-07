@@ -4,6 +4,7 @@ import jakarta.persistence.LockModeType;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -21,14 +22,21 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Optional<Ticket> findByExternalTicketIdForUpdate(
             @Param("externalTicketId") Long externalTicketId);
 
+    @EntityGraph(attributePaths = "performance")
     @Query("""
-            select t from Ticket t
-            where (:performanceId is null or t.performanceId = :performanceId)
-              and (:status is null or t.status = :status)
-            """)
-    List<Ticket> search(@Param("performanceId") Long performanceId,
-                        @Param("status") TicketStatus status, Pageable pageable);
-
+        select t from Ticket t
+        where (:performanceId is null
+               or t.performance.id = :performanceId)
+          and (:status is null or t.status = :status)
+        """)
+    List<Ticket> search(
+            @Param("performanceId") Long performanceId,
+            @Param("status") TicketStatus status,
+            Pageable pageable
+    );
+    @Override
+    @EntityGraph(attributePaths = "performance")
+    Optional<Ticket> findById(Long id);
     // 구독 생성/재활성화와 티켓 삭제가 같은 티켓에 대해 동시에 진행되지 않게 한다.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from Ticket t where t.id = :ticketId")

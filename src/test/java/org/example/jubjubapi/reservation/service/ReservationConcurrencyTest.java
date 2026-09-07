@@ -10,6 +10,9 @@ import org.example.jubjubapi.ticketserver.entity.TicketServerAccount;
 import org.example.jubjubapi.ticketserver.repository.TicketServerAccountRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
+import org.example.jubjubapi.ticket.performance.entity.Performance;
+import org.example.jubjubapi.ticket.performance.entity.PerformanceStatus;
+import org.example.jubjubapi.ticket.performance.repository.PerformanceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,6 +51,9 @@ class ReservationConcurrencyTest {
     private TicketRepository ticketRepository;
 
     @Autowired
+    private PerformanceRepository performanceRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -58,6 +64,7 @@ class ReservationConcurrencyTest {
 
     private Ticket ticket;
     private List<Long> userIdList;
+    private Performance performance;
 
     @BeforeEach
     void setUp() {
@@ -67,13 +74,23 @@ class ReservationConcurrencyTest {
         given(ticketServerClient.createTemporaryReservation(any(), any()))
                 .willAnswer(invocation -> sequence.getAndIncrement());
 
+        // 회차 생성
+        performance = performanceRepository.save(
+                new Performance(
+                        System.nanoTime(),             // performanceId
+                        1L,                            // programId
+                        LocalDateTime.now().plusDays(30),
+                        LocalDateTime.now().plusDays(30).plusHours(2),
+                        "테스트 공연장",
+                        PerformanceStatus.UPCOMING
+                )
+        );
+
         // 예약 가능한 티켓 1장
         ticket = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.currentTimeMillis())
-                .performanceId(1L)
+                .performance(performance)
                 .programName("동시성 테스트 공연")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
                 .seatGrade("VIP")
                 .price(new BigDecimal("100000.00"))
                 .status(TicketStatus.AVAILABLE)
@@ -94,6 +111,7 @@ class ReservationConcurrencyTest {
         reservationRepository.deleteAll();
         ticketServerAccountRepository.deleteAll();
         ticketRepository.deleteAll();
+        performanceRepository.deleteAll();
         userRepository.deleteAll();
     }
 

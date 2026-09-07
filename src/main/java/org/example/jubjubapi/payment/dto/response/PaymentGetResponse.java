@@ -6,6 +6,7 @@ import org.example.jubjubapi.payment.entity.Payment;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
 import org.example.jubjubapi.payment.entity.PaymentStatus;
 import org.example.jubjubapi.ticket.entity.Ticket;
+import org.example.jubjubapi.ticket.performance.entity.Performance;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -45,41 +46,24 @@ public class PaymentGetResponse {
     }
 
     @Getter
+    @Builder
     public static class TicketInfo {
+
         private final Long id;
-        private final String programName;
+        private final Long performanceId;
+        private final Long programId;
         private final LocalDateTime startAt;
         private final String venue;
-        private final String seatGrade;
-        private final String section;
-        private final String rowNumber;
-        private final String seatNumber;
-        private final BigDecimal price;
-
-        @Builder
-        private TicketInfo(Long id, String programName, LocalDateTime startAt, String venue, String seatGrade, String section, String rowNumber, String seatNumber, BigDecimal price) {
-            this.id = id;
-            this.programName = programName;
-            this.startAt = startAt;
-            this.venue = venue;
-            this.seatGrade = seatGrade;
-            this.section = section;
-            this.rowNumber = rowNumber;
-            this.seatNumber = seatNumber;
-            this.price = price;
-        }
 
         public static TicketInfo from(Ticket ticket) {
+            Performance performance = ticket.getPerformance();
+
             return TicketInfo.builder()
                     .id(ticket.getId())
-                    .programName(ticket.getProgramName())
-                    .startAt(ticket.getStartAt())
-                    .venue(ticket.getVenue())
-                    .seatGrade(ticket.getSeatGrade())
-                    .section(ticket.getSection())
-                    .rowNumber(ticket.getRowNumber())
-                    .seatNumber(ticket.getSeatNumber())
-                    .price(ticket.getPrice())
+                    .performanceId(performance.getId())
+                    .programId(performance.getProgramId())
+                    .startAt(performance.getStartAt())
+                    .venue(performance.getVenue())
                     .build();
         }
     }

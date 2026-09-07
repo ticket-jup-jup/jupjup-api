@@ -11,21 +11,26 @@ import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
-    @Query(
-            "select p " +
-            "from Payment p " +
-            "join fetch p.reservation r " +
-            "join fetch r.ticket " +
-            "where p.id = :id"
-    )
-    Optional<Payment> findByIdWithReservationAndTicket(@Param("id") Long id);
+    @Query("""
+        select p from Payment p
+        join fetch p.reservation r
+        join fetch r.ticket t
+        join fetch t.performance
+        where p.id = :id
+        """)
+    Optional<Payment> findByIdWithReservationAndTicket(
+            @Param("id") Long id
+    );
 
-    @Query(
-            "select p " +
-            "from Payment p " +
-            "join fetch p.reservation r " +
-            "join fetch r.ticket " +
-            "where r.user.id = :userId"
-    )
-    List<Payment> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+    @Query("""
+        select p from Payment p
+        join fetch p.reservation r
+        join fetch r.ticket t
+        join fetch t.performance
+        where r.user.id = :userId
+        """)
+    List<Payment> findAllByUserId(
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
 }

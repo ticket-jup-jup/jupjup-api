@@ -6,10 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.global.dto.ApiResponse;
 import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
-import org.example.jubjubapi.ticket.dto.TicketWatchCreateRequest;
-import org.example.jubjubapi.ticket.dto.TicketWatchResponse;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
-import org.example.jubjubapi.ticket.entity.TicketWatchStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.service.TicketService;
@@ -63,34 +60,7 @@ public class TicketController {
         ticketService.deleteTicket(ticketId);
         return ResponseEntity.noContent().build();
     }
-    //취소표 알림 구독 생성
-    @PostMapping("/ticket-watches")
-    public ResponseEntity<ApiResponse<TicketWatchResponse>> createWatch(
-            @AuthenticationPrincipal JwtUserPrincipal principal,
-            @Valid @RequestBody TicketWatchCreateRequest request) {
-        TicketWatchResponse response =
-                ticketService.createWatch(requireUserId(principal), request.getTicketId());
-        return ResponseEntity.created(URI.create("/api/ticket-watches/" + response.getId()))
-                .body(ApiResponse.success(List.of(response)));
-    }
-    //사용자의 알림 구독 목록 조회
-    @GetMapping("/ticket-watches")
-    public ApiResponse<TicketWatchResponse> getMyWatches(
-            @AuthenticationPrincipal JwtUserPrincipal principal,
-            @RequestParam(defaultValue = "ACTIVE") TicketWatchStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ApiResponse.success(
-                ticketService.getMyWatches(requireUserId(principal), status, page, size));
-    }
-    //취소표 알림 구독 해제
-    @DeleteMapping("/ticket-watches/{watchId}")
-    public ResponseEntity<Void> deactivateWatch(
-            @AuthenticationPrincipal JwtUserPrincipal principal,
-            @PathVariable Long watchId) {
-        ticketService.deactivateWatch(requireUserId(principal), watchId);
-        return ResponseEntity.noContent().build();
-    }
+
 
     // 요청 DTO 검증 실패 처리
     //기존 공통 예외 처리기는 ServiceException만 다루므로 이 DTO 오류를 변환한다.

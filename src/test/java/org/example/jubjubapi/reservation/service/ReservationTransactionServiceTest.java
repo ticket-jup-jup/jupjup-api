@@ -15,6 +15,9 @@ import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
+import org.example.jubjubapi.ticket.performance.entity.Performance;
+import org.example.jubjubapi.ticket.performance.entity.PerformanceStatus;
+import org.example.jubjubapi.ticket.performance.repository.PerformanceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -50,10 +54,15 @@ class ReservationTransactionServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PerformanceRepository performanceRepository;
+
+
     private User me;
     private User other;
     private Reservation myReservation;
     private Reservation otherReservation;
+    private Performance performance;
     @MockitoBean
     private TicketServerClient ticketServerClient;
 
@@ -62,6 +71,19 @@ class ReservationTransactionServiceTest {
         // 사용자 두명 생성
         me = userRepository.save(User.create("a"+System.nanoTime()+"@test.com", "test123", "me"));
         other = userRepository.save(User.create("a"+System.nanoTime()+"@test.com", "test123", "other"));
+
+        // 회차 생성
+        performance = performanceRepository.save(
+                new Performance(
+                        System.nanoTime(),
+                        1L,
+                        LocalDateTime.now().plusDays(30),
+                        LocalDateTime.now().plusDays(30).plusHours(2),
+                        "테스트 공연장",
+                        PerformanceStatus.UPCOMING
+                )
+        );
+
 
         // 나의 예약 2개
         myReservation = createReservation(me, "뮤지컬 캣츠");
@@ -158,10 +180,8 @@ class ReservationTransactionServiceTest {
     private Reservation createReservation(User user, String programName) {
         Ticket ticket = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
-                .performanceId(1L)
+                .performance(performance)
                 .programName(programName)
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
                 .seatGrade("VIP")
                 .price(new BigDecimal("100000.00"))
                 .status(TicketStatus.RESERVED)

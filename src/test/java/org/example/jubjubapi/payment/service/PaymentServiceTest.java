@@ -20,6 +20,9 @@ import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
+import org.example.jubjubapi.ticket.performance.entity.Performance;
+import org.example.jubjubapi.ticket.performance.entity.PerformanceStatus;
+import org.example.jubjubapi.ticket.performance.repository.PerformanceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,6 +64,9 @@ class PaymentServiceTest {
     private TicketRepository ticketRepository;
 
     @Autowired
+    private PerformanceRepository performanceRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -73,12 +79,22 @@ class PaymentServiceTest {
     private User other;
     private Reservation myReservation;
     private Reservation otherReservation;
+    private Performance performance;
 
     @BeforeEach
     void setUp() {
         me = userRepository.save(User.create("a" + System.nanoTime() + "@test.com", "test123", "me"));
         other = userRepository.save(User.create("a" + System.nanoTime() + "@test.com", "test123", "other"));
-
+        performance = performanceRepository.save(
+                new Performance(
+                        1L,
+                        100L,
+                        LocalDateTime.now().plusDays(30),
+                        LocalDateTime.now().plusDays(30).plusHours(2),
+                        "테스트 공연장",
+                        PerformanceStatus.UPCOMING
+                )
+        );
         myReservation = createReservation(me);
         otherReservation = createReservation(other);
     }
@@ -88,6 +104,7 @@ class PaymentServiceTest {
         paymentRepository.deleteAll();
         reservationRepository.deleteAll();
         ticketRepository.deleteAll();
+        performanceRepository.deleteAll();
         userRepository.deleteAll();
     }
 
@@ -186,20 +203,16 @@ class PaymentServiceTest {
     void 결제_전체_조회_성공() {
         Ticket ticket2 = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
-                .performanceId(1L)
+                .performance(performance)
                 .programName("테스트 공연2")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
                 .seatGrade("VIP")
                 .price(TICKET_PRICE)
                 .status(TicketStatus.RESERVED)
                 .build());
         Ticket ticket3 = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
-                .performanceId(1L)
+                .performance(performance)
                 .programName("테스트 공연3")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
                 .seatGrade("VIP")
                 .price(TICKET_PRICE)
                 .status(TicketStatus.RESERVED)
@@ -271,10 +284,8 @@ class PaymentServiceTest {
     private Reservation createReservation(User user) {
         Ticket ticket = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
-                .performanceId(1L)
+                .performance(performance)
                 .programName("테스트 공연")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
                 .seatGrade("VIP")
                 .price(TICKET_PRICE)
                 .status(TicketStatus.RESERVED)

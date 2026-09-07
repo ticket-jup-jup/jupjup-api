@@ -2,6 +2,8 @@ package org.example.jubjubapi.ticket;
 
 import org.example.jubjubapi.global.exception.ServiceException;
 import org.example.jubjubapi.ticket.entity.*;
+import org.example.jubjubapi.ticket.performance.entity.Performance;
+import org.example.jubjubapi.ticket.performance.entity.PerformanceStatus;
 import org.example.jubjubapi.ticket.repository.*;
 import org.example.jubjubapi.ticket.service.TicketService;
 import org.example.jubjubapi.user.entity.User;
@@ -23,31 +25,32 @@ import static org.mockito.Mockito.*;
 
 class TicketServiceTest {
     private TicketRepository tickets;
-    private TicketWatchRepository watches;
-    private UserRepository users;
     private TicketService service;
-    private User user;
+    private Performance performance;
     private Ticket ticket;
 
     @BeforeEach
     void setUp() {
         tickets = mock(TicketRepository.class);
-        watches = mock(TicketWatchRepository.class);
+        service = new TicketService(tickets);
+        performance = new Performance(
+                10L,
+                100L,
+                LocalDateTime.of(2026, 10, 1, 19, 0),
+                LocalDateTime.of(2026, 10, 1, 21, 0),
+                "공연장",
+                PerformanceStatus.UPCOMING
+        );
 
-        users = mock(UserRepository.class);
-        service = new TicketService(tickets, watches, users);
-        user = User.create("test@example.com", "encoded-password", "사용자");
-        ReflectionTestUtils.setField(user, "id", 1L);
-        ticket = Ticket.builder().externalTicketId(100L).performanceId(10L)
-                .programName("공연").startAt(LocalDateTime.of(2026, 10, 1, 19, 0))
-                .venue("공연장").price(new BigDecimal("50000.00"))
+        ticket = Ticket.builder().externalTicketId(100L).performance(performance)
+                .programName("공연").price(new BigDecimal("50000.00"))
+                .seatGrade("VIP").section("A").rowNumber("1").seatNumber("2")
                 .status(TicketStatus.SOLD).build();
         ReflectionTestUtils.setField(ticket, "id", 2L);
-        when(users.findById(1L)).thenReturn(Optional.of(user));
         when(tickets.findByIdForUpdate(2L)).thenReturn(Optional.of(ticket));
     }
 
-    @Test
+    /*@Test
     @DisplayName("취소표 알림 구독 생성 성공")
     void createsWatchForAuthenticatedUser() {
         when(watches.findByUser_IdAndTicket_Id(1L, 2L)).thenReturn(Optional.empty());
@@ -118,12 +121,7 @@ class TicketServiceTest {
         verify(tickets, never()).findByIdForUpdate(anyLong());
     }
 
-    @Test
-    @DisplayName("구독 참조 티켓 삭제 실패")
-    void anyWatchReferenceBlocksPhysicalDeletion() {
-        when(watches.existsByTicket_Id(2L)).thenReturn(true);
-        assertDeletionConflict("TICKET_IN_USE");
-    }
+     */
 
 
     @Test
@@ -166,6 +164,30 @@ class TicketServiceTest {
                 () -> service.getTickets(null, null, 0, 101));
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
         verify(tickets, never()).search(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("회차 변경 후에도 티켓 조회에서 공연명과 좌석 및 가격을 유지한다")
+    void returnsUpdatedPerformanceWithExistingTicketDetails() {
+        LocalDateTime changedStartAt = LocalDateTime.of(2026, 10, 2, 20, 0);
+        performance.update(changedStartAt, changedStartAt.plusHours(2),
+                "변경된 공연장", PerformanceStatus.UPCOMING);
+        when(tickets.findById(2L)).thenReturn(Optional.of(ticket));
+
+        var response = service.getTicket(2L);
+
+        assertAll(
+                () -> assertEquals(10L, response.getPerformanceId()),
+                () -> assertEquals(100L, response.getProgramId()),
+                () -> assertEquals(changedStartAt, response.getStartAt()),
+                () -> assertEquals("변경된 공연장", response.getVenue()),
+                () -> assertEquals("공연", response.getProgramName()),
+                () -> assertEquals("VIP", response.getSeatGrade()),
+                () -> assertEquals("A", response.getSection()),
+                () -> assertEquals("1", response.getRowNumber()),
+                () -> assertEquals("2", response.getSeatNumber()),
+                () -> assertEquals(new BigDecimal("50000.00"), response.getPrice())
+        );
     }
 
     @Test
