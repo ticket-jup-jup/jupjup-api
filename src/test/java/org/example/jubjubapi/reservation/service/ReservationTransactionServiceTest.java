@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
+@Transactional
 @SpringBootTest(properties = "spring.datasource.url=jdbc:mysql://localhost:3306/jupjup_test?createDatabaseIfNotExist=true")
 @DisplayName("예약 조회/취소 테스트")
 class ReservationTransactionServiceTest {
@@ -67,13 +69,6 @@ class ReservationTransactionServiceTest {
 
         // 다른 사람의 예약 1개
         otherReservation = createReservation(other, "레미제라블");
-    }
-
-    @AfterEach
-    void tearDown() {
-        reservationRepository.deleteAll();
-        ticketRepository.deleteAll();
-        userRepository.deleteAll();
     }
 
     @Test

@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 public class ReservationNotPendingException extends ServiceException {
 
 
-    public ReservationNotPendingException() {
-        super(HttpStatus.BAD_REQUEST, "RESERVATION_NOT_PENDING", "결제 대기 중인 예약이 아닙니다.");
+    public ReservationNotPendingException(String message) {
+        super(HttpStatus.CONFLICT, "RESERVATION_NOT_PENDING", message);
     }
 }

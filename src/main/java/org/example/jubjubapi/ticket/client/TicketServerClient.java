@@ -1,6 +1,8 @@
 package org.example.jubjubapi.ticket.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.jubjubapi.payment.entity.PaymentMethod;
+import org.example.jubjubapi.ticket.client.dto.request.TicketServerConfirmRequest;
 import org.example.jubjubapi.ticket.client.dto.request.TicketServerReservationRequest;
 import org.example.jubjubapi.ticket.client.dto.response.TicketServerReservationResponse;
 import org.example.jubjubapi.ticket.client.exception.TicketServerApiException;
@@ -100,9 +102,21 @@ public class TicketServerClient {
         return response.extractReservationId();
     }
 
-    // 티켓 서버 API 구현 후 HTTP 호출로 교체 예정
-    public void confirmReservation(Long externalReservationId) {
-        log.info("[임시] 예약 확정 - reservationId={}", externalReservationId);
+    // 예약 확정
+    public void confirmReservation(Long externalReservationId, PaymentMethod paymentMethod) {
+        try {
+            restClient.post()
+                    .uri("/api/reservations/{reservationId}/confirm", externalReservationId)
+                    .body(new TicketServerConfirmRequest(paymentMethod.name()))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (HttpClientErrorException e) {
+            log.warn("티켓서버 예약 확정 거부: externalReservationId={}, status={}", externalReservationId, e.getStatusCode());
+            throw new TicketServerRequestRejectedException();
+        }   catch (RestClientException e) {
+            log.error("티켓서버 통신 실패: externalReservationId={}, message={}", externalReservationId, e.getMessage());
+            throw new TicketServerApiException();
+        }
     }
 
     // 예약 취소
