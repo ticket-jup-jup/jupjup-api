@@ -5,7 +5,7 @@ import org.example.jubjubapi.ticket.dto.TicketResponse;
 import org.example.jubjubapi.ticket.entity.*;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
-import org.example.jubjubapi.ticket.performance.repository.PerformanceWatchRepository;
+//import org.example.jubjubapi.ticket.performance.repository.PerformanceWatchRepository;
 import org.example.jubjubapi.ticket.repository.*;
 import org.example.jubjubapi.ticket.service.TicketService;
 import org.example.jubjubapi.user.entity.User;
@@ -22,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 class TicketServiceTest {
     private TicketRepository tickets;
-    private PerformanceWatchRepository watches;
+    //private PerformanceWatchRepository watches;
     private UserRepository users;
     private TicketService service;
     private User user;
@@ -44,7 +43,7 @@ class TicketServiceTest {
     @BeforeEach
     void setUp() {
         tickets = mock(TicketRepository.class);
-        watches = mock(PerformanceWatchRepository.class);
+        //watches = mock(PerformanceWatchRepository.class);
 
         users = mock(UserRepository.class);
         service = new TicketService(tickets, users);

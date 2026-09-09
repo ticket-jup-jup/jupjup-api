@@ -6,9 +6,7 @@ import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
-import org.example.jubjubapi.ticket.performance.repository.PerformanceWatchRepository;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
-import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -25,7 +23,6 @@ import java.util.List;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    private final UserRepository userRepository;
 
     //티켓목록조회
     public List<TicketResponse> getTickets(Long performanceId, TicketStatus status,
@@ -113,6 +110,7 @@ public class TicketService {
         }
     }
     //공통함수
+    /*
 
     //활성 사용자 조회
     private User findActiveUser(Long userId) {
@@ -121,7 +119,7 @@ public class TicketService {
         }
         return userRepository.findById(userId).filter(User::isActive)
                 .orElseThrow(()->new TicketException(TicketErrorCode.USER_UNAVAILABLE ));
-    }
+    }*/
     //ID 검증
     private void requirePositiveId(Long id) {
         if (id == null || id <= 0) {
