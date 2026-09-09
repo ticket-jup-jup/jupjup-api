@@ -5,7 +5,6 @@ import org.example.jubjubapi.ticket.dto.TicketResponse;
 import org.example.jubjubapi.ticket.entity.*;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
-import org.example.jubjubapi.ticket.performance.repository.PerformanceWatchRepository;
 import org.example.jubjubapi.ticket.repository.*;
 import org.example.jubjubapi.ticket.service.TicketService;
 import org.example.jubjubapi.user.entity.User;
@@ -31,7 +30,6 @@ import static org.mockito.Mockito.*;
 
 class TicketServiceTest {
     private TicketRepository tickets;
-    //private PerformanceWatchRepository watches;
     private UserRepository users;
     private TicketService service;
     private User user;
@@ -43,8 +41,6 @@ class TicketServiceTest {
     @BeforeEach
     void setUp() {
         tickets = mock(TicketRepository.class);
-        //watches = mock(PerformanceWatchRepository.class);
-
         users = mock(UserRepository.class);
         service = new TicketService(tickets);
         user = User.create("test@example.com", "encoded-password", "사용자");
@@ -140,89 +136,6 @@ class TicketServiceTest {
                 .delete(any(Ticket.class));
     }
 
-
-    /*
-
-
-    @Test
-    @DisplayName("취소표 알림 구독 생성 성공")
-    void createsWatchForAuthenticatedUser() {
-        when(watches.findByUser_IdAndTicket_Id(1L, 2L)).thenReturn(Optional.empty());
-        when(watches.saveAndFlush(any(TicketWatch.class))).thenAnswer(invocation -> {
-            TicketWatch saved = invocation.getArgument(0);
-            ReflectionTestUtils.setField(saved, "id", 3L);
-            assertSame(user, saved.getUser());
-            assertSame(ticket, saved.getTicket());
-            return saved;
-        });
-        var response = service.createWatch(1L, 2L);
-        assertEquals(3L, response.getId());
-        assertEquals(2L, response.getTicketId());
-        assertEquals(TicketWatchStatus.ACTIVE, response.getStatus());
-    }
-
-    @Test
-    @DisplayName("활성 구독 중복 생성 실패")
-    void rejectsDuplicateActiveWatch() {
-        TicketWatch watch = TicketWatch.create(user, ticket);
-        when(watches.findByUser_IdAndTicket_Id(1L, 2L)).thenReturn(Optional.of(watch));
-        ServiceException error = assertThrows(ServiceException.class,
-                () -> service.createWatch(1L, 2L));
-        assertEquals("WATCH_ALREADY_EXISTS", error.getCode());
-        assertEquals(HttpStatus.CONFLICT, error.getStatus());
-        verify(watches, never()).saveAndFlush(any());
-    }
-
-    @Test
-    @DisplayName("비활성 구독 재활성화 성공")
-    void reusesWatchIdWhenResubscribing() {
-        TicketWatch watch = TicketWatch.create(user, ticket);
-        ReflectionTestUtils.setField(watch, "id", 3L);
-        watch.deactivate();
-        when(watches.findByUser_IdAndTicket_Id(1L, 2L)).thenReturn(Optional.of(watch));
-        when(watches.saveAndFlush(watch)).thenReturn(watch);
-        assertEquals(3L, service.createWatch(1L, 2L).getId());
-        assertTrue(watch.isActive());
-        verify(watches).saveAndFlush(watch);
-    }
-
-    @Test
-    @DisplayName("다른 사용자 구독 해제 실패")
-    void cannotDeactivateAnotherUsersWatch() {
-        when(watches.findByIdAndUser_Id(30L, 1L)).thenReturn(Optional.empty());
-        var error = assertThrows(ServiceException.class, () -> service.deactivateWatch(1L, 30L));
-        assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
-        verify(watches).findByIdAndUser_Id(30L, 1L);
-    }
-
-    @Test
-    @DisplayName("구독 해제 멱등성 검증")
-    void unsubscribeIsIdempotentAndKeepsRow() {
-        TicketWatch watch = TicketWatch.create(user, ticket);
-        when(watches.findByIdAndUser_Id(3L, 1L)).thenReturn(Optional.of(watch));
-        service.deactivateWatch(1L, 3L);
-        service.deactivateWatch(1L, 3L);
-        assertFalse(watch.isActive());
-        verify(watches, never()).delete(any());
-    }
-
-    @Test
-    @DisplayName("비활성 사용자 구독 실패")
-    void unavailableUserCannotSubscribe() {
-        user.withdraw(LocalDateTime.now());
-        var error = assertThrows(ServiceException.class, () -> service.createWatch(1L, 2L));
-        assertEquals(HttpStatus.UNAUTHORIZED, error.getStatus());
-        verify(tickets, never()).findByIdForUpdate(anyLong());
-    }
-
-    @Test
-    @DisplayName("구독 참조 티켓 삭제 실패")
-    void anyWatchReferenceBlocksPhysicalDeletion() {
-        when(watches.existsByTicket_Id(2L)).thenReturn(true);
-        assertDeletionConflict("TICKET_IN_USE");
-    }
-
-     */
 
     @Test
     @DisplayName("티켓 목록을 조건과 페이징에 맞게 조회한다")

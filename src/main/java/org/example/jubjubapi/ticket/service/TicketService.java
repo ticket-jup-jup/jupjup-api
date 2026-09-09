@@ -7,7 +7,6 @@ import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
-import org.example.jubjubapi.user.repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,54 +40,7 @@ public class TicketService {
         return TicketResponse.from(ticket);
     }
 
-    /*
-    //취소표 알림 구독 생성
-    @Transactional
-    public TicketWatchResponse createWatch(Long userId, Long ticketId) {
-        User user = findActiveUser(userId);
-        requirePositiveId(ticketId);
-        Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
-                .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND));
 
-        TicketWatch watch = ticketWatchRepository.findByUser_IdAndTicket_Id(userId, ticketId)
-                .orElse(null);
-        if (watch != null && watch.isActive()) {
-            throw new TicketException(TicketErrorCode.WATCH_ALREADY_EXISTS);
-        }
-        if (watch == null) {
-            watch = TicketWatch.create(user, ticket);
-        } else {
-            // 기존 알림이 참조하는 watchId를 유지한다.
-            watch.activate();
-        }
-
-        try {
-            return TicketWatchResponse.from(ticketWatchRepository.saveAndFlush(watch));
-        } catch (DataIntegrityViolationException ex) {
-            throw new TicketException(TicketErrorCode.WATCH_CONFLICT);
-        }
-    }
-
-    //취소표 알림 구독 목록 조회
-    public List<TicketWatchResponse> getMyWatches(Long userId, TicketWatchStatus status,
-                                                  int page, int size) {
-        findActiveUser(userId);
-        if (status == null) {
-            throw new TicketException(TicketErrorCode.INVALID_WATCH_STATUS);
-        }
-        return ticketWatchRepository.findByUser_IdAndStatus(userId, status, pageable(page, size))
-                .stream().map(TicketWatchResponse::from).toList();
-    }
-    //취소표 알림 구독 해제
-    @Transactional
-    public void deactivateWatch(Long userId, Long watchId) {
-        findActiveUser(userId);
-        requirePositiveId(watchId);
-        TicketWatch watch = ticketWatchRepository.findByIdAndUser_Id(watchId, userId)
-                .orElseThrow(()->new TicketException(TicketErrorCode.WATCH_NOT_FOUND));
-        // 반복 해제도 성공한다. DB 행과 과거 알림은 삭제하지 않는다.
-        watch.deactivate();
-    }*/
     //티켓 데이터 삭제
     @Transactional
     public void deleteTicket(Long ticketId) {
@@ -110,16 +62,6 @@ public class TicketService {
         }
     }
     //공통함수
-    /*
-
-    //활성 사용자 조회
-    private User findActiveUser(Long userId) {
-        if (userId == null || userId <= 0) {
-            throw new TicketException(TicketErrorCode.AUTHENTICATION_REQUIRED);
-        }
-        return userRepository.findById(userId).filter(User::isActive)
-                .orElseThrow(()->new TicketException(TicketErrorCode.USER_UNAVAILABLE ));
-    }*/
     //ID 검증
     private void requirePositiveId(Long id) {
         if (id == null || id <= 0) {
