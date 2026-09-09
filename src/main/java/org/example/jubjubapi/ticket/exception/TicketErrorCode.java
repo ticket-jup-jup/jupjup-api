@@ -7,8 +7,9 @@ import org.springframework.http.HttpStatus;
 public enum TicketErrorCode {
     //NOTFOUND
     WATCH_NOT_FOUND(HttpStatus.NOT_FOUND, "WATCH_NOT_FOUND", "내 구독을 찾을 수 없습니다."),
+    PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND,"PERFORMANCE_NOT_FOUND","회차를 찾을 수 없습니다."),
     //CONFLICT
-    WATCH_ALREADY_EXISTS(HttpStatus.CONFLICT,"WATCH_ALREADY_EXISTS","이미 구독 중인 티켓입니다."),
+    WATCH_ALREADY_EXISTS(HttpStatus.CONFLICT,"WATCH_ALREADY_EXISTS","이미 구독 중인 회차입니다."),
     WATCH_CONFLICT(HttpStatus.CONFLICT,"WATCH_CONFLICT", "구독 저장 중 데이터 충돌이 발생했습니다."),
     TICKET_IN_USE(HttpStatus.CONFLICT,"TICKET_IN_USE", "구독·알림·예약이 연결된 티켓은 삭제할 수 없습니다."),
     TICKET_DELETE_NOT_READY(HttpStatus.CONFLICT,"TICKET_DELETE_NOT_READY","예약 참조를 보호하는 DB 외래키 설정 후 티켓을 삭제할 수 있습니다."),
