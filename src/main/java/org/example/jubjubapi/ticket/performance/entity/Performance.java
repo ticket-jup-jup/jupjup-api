@@ -41,7 +41,7 @@ public class Performance extends BaseEntity {
             nullable = false,
             length = 255
     )
-    String programName;
+    private String programName;
     @Column(
             name = "end_at",
             nullable = false
