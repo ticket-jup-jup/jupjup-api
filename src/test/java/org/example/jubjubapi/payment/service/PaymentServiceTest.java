@@ -1,4 +1,4 @@
-/*package org.example.jubjubapi.payment.service;
+package org.example.jubjubapi.payment.service;
 
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
 import org.example.jubjubapi.payment.dto.response.PaymentCancelResponse;
@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -88,7 +87,7 @@ class PaymentServiceTest {
         paymentRepository.deleteAll();
         reservationRepository.deleteAll();
         ticketRepository.deleteAll();
-        userRepository.deleteAll();
+        userRepository.deleteAll(List.of(me, other));
     }
 
     @Test
@@ -178,7 +177,6 @@ class PaymentServiceTest {
 
         //then
         assertThat(result.getId()).isEqualTo(created.getId());
-        assertThat(result.getTicket().getProgramName()).isEqualTo("테스트 공연");
     }
 
     @Test
@@ -187,20 +185,12 @@ class PaymentServiceTest {
         Ticket ticket2 = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
                 .performanceId(1L)
-                .programName("테스트 공연2")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
-                .seatGrade("VIP")
                 .price(TICKET_PRICE)
                 .status(TicketStatus.RESERVED)
                 .build());
         Ticket ticket3 = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
                 .performanceId(1L)
-                .programName("테스트 공연3")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
-                .seatGrade("VIP")
                 .price(TICKET_PRICE)
                 .status(TicketStatus.RESERVED)
                 .build());
@@ -272,10 +262,6 @@ class PaymentServiceTest {
         Ticket ticket = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
                 .performanceId(1L)
-                .programName("테스트 공연")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
-                .seatGrade("VIP")
                 .price(TICKET_PRICE)
                 .status(TicketStatus.RESERVED)
                 .build());
@@ -283,4 +269,4 @@ class PaymentServiceTest {
         return reservationRepository.save(
                 Reservation.create(user, ticket, LocalDateTime.now().plusMinutes(10)));
     }
-}*/
+}
