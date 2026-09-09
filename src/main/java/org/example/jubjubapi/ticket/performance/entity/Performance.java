@@ -37,6 +37,12 @@ public class Performance extends BaseEntity {
     )
     private LocalDateTime startAt;
     @Column(
+            name = "name",
+            nullable = false,
+            length = 255
+    )
+    String programName;
+    @Column(
             name = "end_at",
             nullable = false
     )
@@ -61,7 +67,8 @@ public class Performance extends BaseEntity {
             LocalDateTime startAt,
             LocalDateTime endAt,
             String venue,
-            PerformanceStatus status
+            PerformanceStatus status,
+            String programName
     ) {
         this.id = Objects.requireNonNull(
                 id,
@@ -71,6 +78,11 @@ public class Performance extends BaseEntity {
         this.programId = Objects.requireNonNull(
                 programId,
                 "프로그램 ID는 필수입니다."
+        );
+
+        this.programName = Objects.requireNonNull(
+                programName,
+                "프로그램명은 필수입니다."
         );
 
         this.startAt = Objects.requireNonNull(
