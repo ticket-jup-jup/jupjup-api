@@ -1,13 +1,11 @@
-/*package org.example.jubjubapi.payment.service;
+package org.example.jubjubapi.payment.service;
 
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
-import org.example.jubjubapi.payment.repository.PaymentRepository;
 import org.example.jubjubapi.reservation.entity.Reservation;
 import org.example.jubjubapi.reservation.exception.ReservationAccessDeniedException;
 import org.example.jubjubapi.reservation.exception.ReservationNotFoundException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
-import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,4 +55,4 @@ public class PaymentTransactionServiceTest {
         assertThatThrownBy(() -> paymentTransactionService.pay(1L, new PaymentCreateRequest(1L, PaymentMethod.CARD)))
                 .isInstanceOf(ReservationAccessDeniedException.class);
     }
-}*/
+}

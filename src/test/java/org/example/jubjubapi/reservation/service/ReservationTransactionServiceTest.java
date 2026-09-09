@@ -1,4 +1,4 @@
-/*package org.example.jubjubapi.reservation.service;
+package org.example.jubjubapi.reservation.service;
 
 import org.example.jubjubapi.reservation.dto.response.ReservationCancelResponse;
 import org.example.jubjubapi.reservation.dto.response.ReservationGetResponse;
@@ -15,7 +15,6 @@ import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,11 +63,11 @@ class ReservationTransactionServiceTest {
         other = userRepository.save(User.create("a"+System.nanoTime()+"@test.com", "test123", "other"));
 
         // 나의 예약 2개
-        myReservation = createReservation(me, "뮤지컬 캣츠");
-        createReservation(me, "연극 햄릿");
+        myReservation = createReservation(me);
+        createReservation(me);
 
         // 다른 사람의 예약 1개
-        otherReservation = createReservation(other, "레미제라블");
+        otherReservation = createReservation(other);
     }
 
     @Test
@@ -79,7 +78,6 @@ class ReservationTransactionServiceTest {
 
         //then
         assertThat(response.getId()).isEqualTo(myReservation.getId());
-        assertThat(response.getTicket().getProgramName()).isEqualTo("뮤지컬 캣츠");
     }
 
     @Test
@@ -155,14 +153,10 @@ class ReservationTransactionServiceTest {
                 .isInstanceOf(ReservationNotFoundException.class);
     }
 
-    private Reservation createReservation(User user, String programName) {
+    private Reservation createReservation(User user) {
         Ticket ticket = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.nanoTime())
                 .performanceId(1L)
-                .programName(programName)
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
-                .seatGrade("VIP")
                 .price(new BigDecimal("100000.00"))
                 .status(TicketStatus.RESERVED)
                 .build());
@@ -170,4 +164,4 @@ class ReservationTransactionServiceTest {
         return reservationRepository.save(
                 Reservation.create(user, ticket, LocalDateTime.now().plusMinutes(10)));
     }
-}*/
+}
