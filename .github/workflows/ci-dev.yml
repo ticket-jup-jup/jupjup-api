@@ -3,6 +3,8 @@ name: CI - Dev
 on:
   push:
     branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
 
 permissions:
   id-token: write
@@ -11,7 +13,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: dev
 
     services:
       mysql:
@@ -75,8 +76,13 @@ jobs:
       - name: Build JAR
         run: ./gradlew bootJar
 
+      # -----------------------------------------
+      # 여기부터는 dev에 실제 push 되었을 때만 실행
+      # -----------------------------------------
+
       # 7. AWS OIDC 인증
       - name: Configure AWS credentials
+        if: github.event_name == 'push'
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
@@ -84,10 +90,12 @@ jobs:
 
       # 8. ECR Login
       - name: Login to ECR
+        if: github.event_name == 'push'
         uses: aws-actions/amazon-ecr-login@v2
 
       # 9. Docker Build & Push
       - name: Build and push Docker image
+        if: github.event_name == 'push'
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
 
