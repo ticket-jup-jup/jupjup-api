@@ -59,13 +59,13 @@ public class ReservationCancelResponse {
         public static TicketInfo from(Ticket ticket) {
             return TicketInfo.builder()
                     .id(ticket.getId())
-                    .programName(ticket.getProgramName())
+                    /*.programName(ticket.getProgramName())
                     .startAt(ticket.getStartAt())
                     .venue(ticket.getVenue())
                     .seatGrade(ticket.getSeatGrade())
                     .section(ticket.getSection())
                     .rowNumber(ticket.getRowNumber())
-                    .seatNumber(ticket.getSeatNumber())
+                    .seatNumber(ticket.getSeatNumber())*/
                     .price(ticket.getPrice())
                     .build();
         }

@@ -48,38 +48,38 @@ public class PaymentCreateResponse {
     @Getter
     public static class TicketInfo {
         private final Long id;
-        private final String programName;
+        /*private final String programName;
         private final LocalDateTime startAt;
         private final String venue;
         private final String seatGrade;
         private final String section;
         private final String rowNumber;
-        private final String seatNumber;
+        private final String seatNumber;*/
         private final BigDecimal price;
 
         @Builder
         private TicketInfo(Long id, String programName, LocalDateTime startAt, String venue, String seatGrade, String section, String rowNumber, String seatNumber, BigDecimal price) {
             this.id = id;
-            this.programName = programName;
+            /*this.programName = programName;
             this.startAt = startAt;
             this.venue = venue;
             this.seatGrade = seatGrade;
             this.section = section;
             this.rowNumber = rowNumber;
-            this.seatNumber = seatNumber;
+            this.seatNumber = seatNumber;*/
             this.price = price;
         }
 
         public static TicketInfo from(Ticket ticket) {
             return TicketInfo.builder()
                     .id(ticket.getId())
-                    .programName(ticket.getProgramName())
+                    /*.programName(ticket.getProgramName())
                     .startAt(ticket.getStartAt())
                     .venue(ticket.getVenue())
                     .seatGrade(ticket.getSeatGrade())
                     .section(ticket.getSection())
                     .rowNumber(ticket.getRowNumber())
-                    .seatNumber(ticket.getSeatNumber())
+                    .seatNumber(ticket.getSeatNumber())*/
                     .price(ticket.getPrice())
                     .build();
         }
