@@ -26,7 +26,6 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
-    private final PerformanceWatchRepository performanceWatchRepository;
 
     //티켓목록조회
     public List<TicketResponse> getTickets(Long performanceId, TicketStatus status,
@@ -99,9 +98,7 @@ public class TicketService {
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
                 .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND) );
-        if (performanceWatchRepository.existsByPerformance_Id(ticketId)
-                //|| notificationRepository.existsByTicket_Id(ticketId)
-                || ticketRepository.countReservationReferences(ticketId) > 0) {
+        if (ticketRepository.countReservationReferences(ticketId)>0){
             throw new TicketException(TicketErrorCode.TICKET_IN_USE);
         }
 
