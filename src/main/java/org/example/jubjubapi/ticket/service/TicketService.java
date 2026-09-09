@@ -2,18 +2,14 @@ package org.example.jubjubapi.ticket.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
-import org.example.jubjubapi.ticket.dto.TicketWatchResponse;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
-import org.example.jubjubapi.ticket.entity.TicketWatch;
-import org.example.jubjubapi.ticket.entity.TicketWatchStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.ticket.repository.TicketWatchRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,8 +24,6 @@ import java.util.List;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    private final TicketWatchRepository ticketWatchRepository;
-    //private final NotificationRepository notificationRepository;(이후 추가 예정)
     private final UserRepository userRepository;
 
     //티켓목록조회
@@ -49,6 +43,7 @@ public class TicketService {
         return TicketResponse.from(ticket);
     }
 
+    /*
     //취소표 알림 구독 생성
     @Transactional
     public TicketWatchResponse createWatch(Long userId, Long ticketId) {
@@ -117,7 +112,7 @@ public class TicketService {
         } catch (DataIntegrityViolationException ex) {
             throw new TicketException(TicketErrorCode.TICKET_IN_USE_FK);
         }
-    }
+    }*/
     //공통함수
 
     //활성 사용자 조회

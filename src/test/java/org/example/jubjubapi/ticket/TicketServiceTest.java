@@ -2,6 +2,7 @@
 
 import org.example.jubjubapi.global.exception.ServiceException;
 import org.example.jubjubapi.ticket.entity.*;
+import org.example.jubjubapi.ticket.performance.repository.PerformanceWatchRepository;
 import org.example.jubjubapi.ticket.repository.*;
 import org.example.jubjubapi.ticket.service.TicketService;
 import org.example.jubjubapi.user.entity.User;
@@ -23,7 +24,7 @@ import static org.mockito.Mockito.*;
 
 class TicketServiceTest {
     private TicketRepository tickets;
-    private TicketWatchRepository watches;
+    private PerformanceWatchRepository watches;
     private UserRepository users;
     private TicketService service;
     private User user;
@@ -32,15 +33,14 @@ class TicketServiceTest {
     @BeforeEach
     void setUp() {
         tickets = mock(TicketRepository.class);
-        watches = mock(TicketWatchRepository.class);
+        watches = mock(PerformanceWatchRepository.class);
 
         users = mock(UserRepository.class);
-        service = new TicketService(tickets, watches, users);
+        service = new TicketService(tickets, users);
         user = User.create("test@example.com", "encoded-password", "사용자");
         ReflectionTestUtils.setField(user, "id", 1L);
         ticket = Ticket.builder().externalTicketId(100L).performanceId(10L)
-                .programName("공연").startAt(LocalDateTime.of(2026, 10, 1, 19, 0))
-                .venue("공연장").price(new BigDecimal("50000.00"))
+                .price(new BigDecimal("50000.00"))
                 .status(TicketStatus.SOLD).build();
         ReflectionTestUtils.setField(ticket, "id", 2L);
         when(users.findById(1L)).thenReturn(Optional.of(user));
