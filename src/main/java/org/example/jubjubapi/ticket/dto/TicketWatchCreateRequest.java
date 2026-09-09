@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.dto;
+/*package org.example.jubjubapi.ticket.dto;
 
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
@@ -17,4 +17,4 @@ public class TicketWatchCreateRequest {
     public TicketWatchCreateRequest(Long ticketId){
         this.ticketId = ticketId;
     }
-}
+}*/

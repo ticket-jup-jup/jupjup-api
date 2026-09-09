@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.repository;
+/*package org.example.jubjubapi.ticket.repository;
 
 import jakarta.persistence.LockModeType;
 import org.example.jubjubapi.ticket.entity.TicketWatch;
@@ -26,8 +26,8 @@ public interface TicketWatchRepository extends JpaRepository<TicketWatch, Long> 
 
     boolean existsByTicket_Id(Long ticketId);
 
-    /*이후 kafka 알림 처리용*/
+    //이후 kafka 알림 처리용
     @EntityGraph(attributePaths = {"user", "ticket"})
     List<TicketWatch> findByTicket_IdAndStatus(
             Long ticketId, TicketWatchStatus status);
-}
+}*/

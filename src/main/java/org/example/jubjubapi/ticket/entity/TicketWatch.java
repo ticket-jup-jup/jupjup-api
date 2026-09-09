@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.entity;
+/*package org.example.jubjubapi.ticket.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -67,4 +67,4 @@ public class TicketWatch extends BaseEntity {
     }
 
 
-}
+}*/

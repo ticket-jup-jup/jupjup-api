@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.dto;
+/*package org.example.jubjubapi.ticket.dto;
 
 
 import lombok.Getter;
@@ -32,4 +32,4 @@ public class TicketWatchResponse {
                 watch.getStatus(), TicketResponse.from(watch.getTicket()),
                 watch.getCreatedAt(), watch.getUpdatedAt());
     }
-}
+}*/

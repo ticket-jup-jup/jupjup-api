@@ -1,15 +1,12 @@
 package org.example.jubjubapi.ticket.controller;
 
 
-import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.global.dto.ApiResponse;
 import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
-import org.example.jubjubapi.ticket.dto.TicketWatchCreateRequest;
-import org.example.jubjubapi.ticket.dto.TicketWatchResponse;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
-import org.example.jubjubapi.ticket.entity.TicketWatchStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.service.TicketService;
@@ -18,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,6 +59,7 @@ public class TicketController {
         ticketService.deleteTicket(ticketId);
         return ResponseEntity.noContent().build();
     }
+    /*
     //취소표 알림 구독 생성
     @PostMapping("/ticket-watches")
     public ResponseEntity<ApiResponse<TicketWatchResponse>> createWatch(
@@ -91,6 +88,8 @@ public class TicketController {
         ticketService.deactivateWatch(requireUserId(principal), watchId);
         return ResponseEntity.noContent().build();
     }
+
+*/
 
     // 요청 DTO 검증 실패 처리
     //기존 공통 예외 처리기는 ServiceException만 다루므로 이 DTO 오류를 변환한다.

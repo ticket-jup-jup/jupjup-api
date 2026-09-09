@@ -6,10 +6,11 @@ import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
+import org.example.jubjubapi.ticket.performance.repository.PerformanceWatchRepository;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
-import org.example.jubjubapi.ticket.repository.TicketWatchRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,6 +26,7 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final PerformanceWatchRepository performanceWatchRepository;
 
     //티켓목록조회
     public List<TicketResponse> getTickets(Long performanceId, TicketStatus status,
@@ -90,14 +92,14 @@ public class TicketService {
                 .orElseThrow(()->new TicketException(TicketErrorCode.WATCH_NOT_FOUND));
         // 반복 해제도 성공한다. DB 행과 과거 알림은 삭제하지 않는다.
         watch.deactivate();
-    }
+    }*/
     //티켓 데이터 삭제
     @Transactional
     public void deleteTicket(Long ticketId) {
         requirePositiveId(ticketId);
         Ticket ticket = ticketRepository.findByIdForUpdate(ticketId)
                 .orElseThrow(() -> new TicketException(TicketErrorCode.TICKET_NOT_FOUND) );
-        if (ticketWatchRepository.existsByTicket_Id(ticketId)
+        if (performanceWatchRepository.existsByPerformance_Id(ticketId)
                 //|| notificationRepository.existsByTicket_Id(ticketId)
                 || ticketRepository.countReservationReferences(ticketId) > 0) {
             throw new TicketException(TicketErrorCode.TICKET_IN_USE);
@@ -112,7 +114,7 @@ public class TicketService {
         } catch (DataIntegrityViolationException ex) {
             throw new TicketException(TicketErrorCode.TICKET_IN_USE_FK);
         }
-    }*/
+    }
     //공통함수
 
     //활성 사용자 조회
