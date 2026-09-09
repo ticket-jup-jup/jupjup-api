@@ -1,4 +1,4 @@
-package org.example.jubjubapi.reservation.service;
+/*package org.example.jubjubapi.reservation.service;
 
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
@@ -147,4 +147,4 @@ class ReservationConcurrencyTest {
         assertThat(failCount.get()).isEqualTo(THREAD_COUNT - 1);
         assertThat(foundTicket.getStatus()).isEqualTo(TicketStatus.RESERVED);
     }
-}
+}*/

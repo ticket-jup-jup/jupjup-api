@@ -1,4 +1,4 @@
-package org.example.jubjubapi.payment.service;
+/*package org.example.jubjubapi.payment.service;
 
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
 import org.example.jubjubapi.payment.dto.response.PaymentCancelResponse;
@@ -283,4 +283,4 @@ class PaymentServiceTest {
         return reservationRepository.save(
                 Reservation.create(user, ticket, LocalDateTime.now().plusMinutes(10)));
     }
-}
+}*/

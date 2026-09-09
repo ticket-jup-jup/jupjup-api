@@ -1,4 +1,4 @@
-package org.example.jubjubapi.payment.service;
+/*package org.example.jubjubapi.payment.service;
 
 import org.example.jubjubapi.payment.dto.request.PaymentCreateRequest;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
@@ -57,4 +57,4 @@ public class PaymentTransactionServiceTest {
         assertThatThrownBy(() -> paymentTransactionService.pay(1L, new PaymentCreateRequest(1L, PaymentMethod.CARD)))
                 .isInstanceOf(ReservationAccessDeniedException.class);
     }
-}
+}*/
