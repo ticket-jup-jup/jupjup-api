@@ -37,11 +37,11 @@ public class Performance extends BaseEntity {
     )
     private LocalDateTime startAt;
     @Column(
-            name = "name",
+            name = "program_name",
             nullable = false,
             length = 255
     )
-    String programName;
+    private String programName;
     @Column(
             name = "end_at",
             nullable = false
