@@ -1,0 +1,39 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: jupjup-api-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.enable-remote-write-receiver'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: jupjup-api-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+
+  k6:
+    image: grafana/k6:latest
+    depends_on:
+      - prometheus
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=http://prometheus:9090/api/v1/write
+      - K6_PROMETHEUS_RW_TREND_STATS=p(99),p(95),p(90),max,min,avg
+    volumes:
+      - ./k6:/scripts
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["sh", "-c", "k6 run -o experimental-prometheus-rw --tag testid=${TESTID:-baseline} /scripts/test.js"]
+
+volumes:
+  grafana_data:
