@@ -81,6 +81,15 @@ jobs:
       # 여기부터는 dev에 실제 push 되었을 때만 실행
       # -----------------------------------------
 
+      # application-dev.yml이 생성되는지 확인
+      - name: Check JAR contents
+        run: |
+          echo "=== build/libs ==="
+          ls -lah build/libs
+
+          echo "=== application files ==="
+          jar tf build/libs/*.jar | grep 'BOOT-INF/classes/application'
+
       # 7. AWS OIDC 인증
       - name: Configure AWS credentials
         if: github.event_name == 'push'
