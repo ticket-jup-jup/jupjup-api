@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -71,10 +70,6 @@ class ReservationConcurrencyTest {
         ticket = ticketRepository.save(Ticket.builder()
                 .externalTicketId(System.currentTimeMillis())
                 .performanceId(1L)
-                .programName("동시성 테스트 공연")
-                .startAt(LocalDateTime.now().plusDays(30))
-                .venue("테스트 공연장")
-                .seatGrade("VIP")
                 .price(new BigDecimal("100000.00"))
                 .status(TicketStatus.AVAILABLE)
                 .build()

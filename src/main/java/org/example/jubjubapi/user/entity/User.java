@@ -34,6 +34,7 @@ public class User {
     @Column(nullable = false, length = 20)
     private UserStatus status;
 
+    /** 토큰 무효화용. 현재 jwt 검증에서 사용하지 않음 - 리프레시 토큰 도입시 연결 예정 */
     @Column(nullable = false)
     private long securityVersion;
 
