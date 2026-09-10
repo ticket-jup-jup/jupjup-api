@@ -55,13 +55,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/signin").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, AnonymousAuthenticationFilter.class)
                 .build();
     }
 
-    /** @Component 인 JwtFilter 가 서블릿 필터로 중복 등록되어 두 번 실행되는 것을 방지 */
+    /**
+     * @Component 인 JwtFilter 가 서블릿 필터로 중복 등록되어 두 번 실행되는 것을 방지
+     */
     @Bean
     public FilterRegistrationBean<JwtFilter> jwtFilterRegistration(JwtFilter filter) {
         FilterRegistrationBean<JwtFilter> registration = new FilterRegistrationBean<>(filter);
