@@ -14,6 +14,10 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
 
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 3600000
+
 ticket-server:
   url: ${TICKET_SERVER_URL}
   api-key: ${TICKET_SERVER_API_KEY}
