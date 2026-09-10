@@ -9,11 +9,12 @@ import org.example.jubjubapi.user.entity.User;
 
 @Getter
 @Entity
-@Table(name = "ticket_server_account")
+@Table(name = "ticket_server_accounts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TicketServerAccount extends BaseEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)

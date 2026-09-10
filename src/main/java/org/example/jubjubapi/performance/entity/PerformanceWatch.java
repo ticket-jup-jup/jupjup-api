@@ -15,7 +15,7 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "performance_watch",
+        name = "performance_watches",
         uniqueConstraints = @UniqueConstraint(//중복구독방지
                 name = "uk_performance_watch_user_performance",
                 columnNames = {"user_id", "performance_id"}
