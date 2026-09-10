@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.performance.entity;
+package org.example.jubjubapi.performance.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,7 +25,7 @@ import java.util.Objects;
                 columnList = "performance_id, status"
         )
 )
-public class PerformanceWatch extends BaseEntity{
+public class PerformanceWatch extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,8 +1,8 @@
-package org.example.jubjubapi.ticket.performance.repository;
+package org.example.jubjubapi.performance.repository;
 
 import jakarta.persistence.LockModeType;
-import org.example.jubjubapi.ticket.performance.entity.PerformanceWatch;
-import org.example.jubjubapi.ticket.performance.entity.PerformanceWatchStatus;
+import org.example.jubjubapi.performance.entity.PerformanceWatch;
+import org.example.jubjubapi.performance.entity.PerformanceWatchStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Lock;
 import java.util.List;
 import java.util.Optional;
 
-public interface PerformanceWatchRepository extends JpaRepository<PerformanceWatch, Long>{
+public interface PerformanceWatchRepository extends JpaRepository<PerformanceWatch, Long> {
     // 동일 사용자 + 동일 회차 구독 조회
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<PerformanceWatch> findByUser_IdAndPerformance_Id(

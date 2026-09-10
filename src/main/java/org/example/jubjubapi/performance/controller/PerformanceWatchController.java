@@ -1,15 +1,15 @@
-package org.example.jubjubapi.ticket.performance.controller;
+package org.example.jubjubapi.performance.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.global.dto.ApiResponse;
 import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
+import org.example.jubjubapi.performance.dto.PerformanceWatchCreateRequest;
+import org.example.jubjubapi.performance.dto.PerformanceWatchResponse;
+import org.example.jubjubapi.performance.entity.PerformanceWatchStatus;
+import org.example.jubjubapi.performance.service.PerformanceWatchService;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
-import org.example.jubjubapi.ticket.performance.dto.PerformanceWatchCreateRequest;
-import org.example.jubjubapi.ticket.performance.dto.PerformanceWatchResponse;
-import org.example.jubjubapi.ticket.performance.entity.PerformanceWatchStatus;
-import org.example.jubjubapi.ticket.performance.service.PerformanceWatchService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
