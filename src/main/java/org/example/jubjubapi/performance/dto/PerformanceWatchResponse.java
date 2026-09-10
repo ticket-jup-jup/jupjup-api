@@ -1,9 +1,9 @@
-package org.example.jubjubapi.ticket.performance.dto;
+package org.example.jubjubapi.performance.dto;
 
 
 import lombok.Getter;
-import org.example.jubjubapi.ticket.performance.entity.PerformanceWatch;
-import org.example.jubjubapi.ticket.performance.entity.PerformanceWatchStatus;
+import org.example.jubjubapi.performance.entity.PerformanceWatch;
+import org.example.jubjubapi.performance.entity.PerformanceWatchStatus;
 
 import java.time.LocalDateTime;
 

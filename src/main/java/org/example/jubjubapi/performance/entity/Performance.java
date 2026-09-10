@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.performance.entity;
+package org.example.jubjubapi.performance.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -13,7 +13,7 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "performance",
+        name = "performances",
         indexes = {
                 @Index(
                         name = "idx_performance_program",
@@ -61,6 +61,7 @@ public class Performance extends BaseEntity {
             length = 20
     )
     private PerformanceStatus status;
+
     public Performance(
             Long id,
             Long programId,
