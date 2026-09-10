@@ -35,26 +35,6 @@ public class Ticket extends BaseEntity {
     @Column(name = "performance_id", nullable = false, updatable = false)
     private Long performanceId;
 
-    /*@Column(name = "program_name", nullable = false, length = 255)
-    private String programName;
-    @Column(name = "start_at", nullable = false)
-    private LocalDateTime startAt;
-
-    @Column(name = "venue", nullable = false, length = 255)
-    private String venue;
-
-    @Column(name = "seat_grade", nullable = false, length = 20)
-    private String seatGrade;
-
-    @Column(name = "section", length = 50)
-    private String section;
-
-    // ROW_NUMBER는 MySQL 예약어이므로 Hibernate 식별자 인용을 사용한다.
-    @Column(name = "`row_number`", length = 20)
-    private String rowNumber;
-
-    @Column(name = "seat_number", length = 20)
-    private String seatNumber;*/
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -65,19 +45,10 @@ public class Ticket extends BaseEntity {
     private TicketStatus status;
 
     @Builder
-    private Ticket(Long externalTicketId, Long performanceId, /*String programName,
-                   LocalDateTime startAt, String venue, String seatGrade,
-                   String section, String rowNumber, String seatNumber,*/
+    private Ticket(Long externalTicketId, Long performanceId,
                    BigDecimal price, TicketStatus status) {
         this.externalTicketId = Objects.requireNonNull(externalTicketId, "외부 티켓 ID는 필수입니다.");
         this.performanceId = Objects.requireNonNull(performanceId, "회차 ID는 필수입니다.");
-        /*this.programName = Objects.requireNonNull(programName, "프로그램명은 필수입니다.");
-        this.startAt = Objects.requireNonNull(startAt, "시작 일시는 필수입니다.");
-        this.venue = Objects.requireNonNull(venue, "장소는 필수입니다.");
-        this.seatGrade = seatGrade;
-        this.section = section;
-        this.rowNumber = rowNumber;
-        this.seatNumber = seatNumber;*/
         if (price == null || price.signum() < 0) {
             throw new TicketException(TicketErrorCode.INVALID_TICKET_PRICE);
         }
