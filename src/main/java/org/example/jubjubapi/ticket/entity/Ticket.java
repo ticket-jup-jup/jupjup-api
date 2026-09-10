@@ -13,14 +13,13 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "ticket",
+@Table(name = "tickets",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_ticket_external_id", columnNames = "external_ticket_id"),
         indexes = @Index(name = "idx_ticket_performance", columnList = "performance_id"))
@@ -30,7 +29,7 @@ public class Ticket extends BaseEntity {
     private Long id;
 
 
-    @Column(name="external_ticket_id", nullable = false,updatable = false)
+    @Column(name = "external_ticket_id", nullable = false, updatable = false)
     private Long externalTicketId;//원본 티켓 서버의 ID.
 
     @Column(name = "performance_id", nullable = false, updatable = false)
@@ -79,7 +78,7 @@ public class Ticket extends BaseEntity {
         this.section = section;
         this.rowNumber = rowNumber;
         this.seatNumber = seatNumber;*/
-        if (price == null ||price.signum() < 0) {
+        if (price == null || price.signum() < 0) {
             throw new TicketException(TicketErrorCode.INVALID_TICKET_PRICE);
         }
         this.price = price;
@@ -91,9 +90,6 @@ public class Ticket extends BaseEntity {
     public void updateStatus(TicketStatus status) {
         this.status = Objects.requireNonNull(status, "티켓 상태는 필수입니다.");
     }
-
-
-
 
 
 }
