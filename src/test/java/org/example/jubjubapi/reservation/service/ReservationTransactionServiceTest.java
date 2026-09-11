@@ -9,10 +9,10 @@ import org.example.jubjubapi.reservation.exception.ReservationAccessDeniedExcept
 import org.example.jubjubapi.reservation.exception.ReservationAlreadyFinishedException;
 import org.example.jubjubapi.reservation.exception.ReservationNotFoundException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
-import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
+import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,8 +59,8 @@ class ReservationTransactionServiceTest {
     @BeforeEach
     void setUp() {
         // 사용자 두명 생성
-        me = userRepository.save(User.create("a"+System.nanoTime()+"@test.com", "test123", "me"));
-        other = userRepository.save(User.create("a"+System.nanoTime()+"@test.com", "test123", "other"));
+        me = userRepository.save(User.create("a" + System.nanoTime() + "@test.com", "test123", "me"));
+        other = userRepository.save(User.create("a" + System.nanoTime() + "@test.com", "test123", "other"));
 
         // 나의 예약 2개
         myReservation = createReservation(me);

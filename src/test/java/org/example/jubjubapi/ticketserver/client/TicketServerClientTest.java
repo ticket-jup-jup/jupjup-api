@@ -1,6 +1,9 @@
-package org.example.jubjubapi.ticket.client;
+package org.example.jubjubapi.ticketserver.client;
 
+import org.example.jubjubapi.program.dto.TicketServerProgram;
+import org.example.jubjubapi.program.entity.ProgramType;
 import org.example.jubjubapi.ticket.exception.TicketException;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerProgramDataNotFoundException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +15,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -88,5 +93,59 @@ class TicketServerClientTest {
 
         assertThatThrownBy(() -> ticketServerClient.createTemporaryReservation(1L, 1L))
                 .isInstanceOf(TicketServerUnavailableException.class);
+    }
+
+    @Test
+    void 프로그램_목록_조회() {
+        // given
+        String responseJson = """
+                {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "뮤지컬 위키드",
+                      "type": "MUSICAL",
+                      "description": "뮤지컬 공연"
+                    }
+                  ]
+                }
+                """;
+
+        mockServer.expect(requestTo(TICKET_SERVER_URL + "/api/programs"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        // when
+        List<TicketServerProgram> result = ticketServerClient.getPrograms();
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        assertThat(result.get(0).getName()).isEqualTo("뮤지컬 위키드");
+        assertThat(result.get(0).getType()).isEqualTo(ProgramType.MUSICAL);
+        assertThat(result.get(0).getDescription()).isEqualTo("뮤지컬 공연");
+
+        mockServer.verify();
+    }
+
+    @Test
+    void 프로그램_데이터_없음_예외() {
+        // given
+        String responseJson = """
+                {
+                  "success": true,
+                  "data": []
+                }
+                """;
+
+        mockServer.expect(requestTo(TICKET_SERVER_URL + "/api/programs"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        // when & then
+        assertThatThrownBy(() -> ticketServerClient.getPrograms()).isInstanceOf(TicketServerProgramDataNotFoundException.class);
+
+        mockServer.verify();
     }
 }

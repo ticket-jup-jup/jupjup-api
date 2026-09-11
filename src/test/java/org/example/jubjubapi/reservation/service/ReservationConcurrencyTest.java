@@ -2,10 +2,10 @@ package org.example.jubjubapi.reservation.service;
 
 import org.example.jubjubapi.reservation.dto.request.ReservationCreateRequest;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
-import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
+import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.example.jubjubapi.ticketserver.entity.TicketServerAccount;
 import org.example.jubjubapi.ticketserver.repository.TicketServerAccountRepository;
 import org.example.jubjubapi.user.entity.User;

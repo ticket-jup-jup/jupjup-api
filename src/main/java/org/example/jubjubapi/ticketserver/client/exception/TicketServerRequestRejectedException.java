@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.client.exception;
+package org.example.jubjubapi.ticketserver.client.exception;
 
 import org.example.jubjubapi.global.exception.ServiceException;
 import org.springframework.http.HttpStatus;

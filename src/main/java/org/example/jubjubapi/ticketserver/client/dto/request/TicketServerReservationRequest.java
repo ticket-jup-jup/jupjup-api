@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.client.dto.request;
+package org.example.jubjubapi.ticketserver.client.dto.request;
 
 import lombok.Getter;
 
