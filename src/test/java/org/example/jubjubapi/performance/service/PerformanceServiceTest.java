@@ -80,10 +80,12 @@ class PerformanceServiceTest {
         when(programRepository.findAllByDeletedAtIsNull()).thenReturn(List.of(program));
         when(ticketServerClient.getPerformances(100L)).thenReturn(List.of(ticketServerPerformance));
         when(performanceRepository.findByExternalPerformanceId(1L)).thenReturn(Optional.empty());
-        when(performanceRepository.findAllByProgramIdAndDeletedAtIsNullAndExternalPerformanceIdNotIn(
-                eq(1L),
-                eq(Set.of(1L))
-        )).thenReturn(List.of());
+
+        when(performanceRepository.save(any(Performance.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(performanceRepository.findAllByProgramIdAndDeletedAtIsNullAndExternalPerformanceIdNotIn(eq(1L), eq(Set.of(1L))))
+                .thenReturn(List.of());
 
         when(ticketServerClient.getSeats(1L)).thenReturn(List.of(seat));
 
@@ -104,7 +106,6 @@ class PerformanceServiceTest {
         assertThat(savedPerformance.getStatus()).isEqualTo(PerformanceStatus.UPCOMING);
 
         verify(ticketServerClient).getPerformances(100L);
-
         verify(ticketServerClient).getSeats(1L);
         verify(seatService).syncSeats(savedPerformance, List.of(seat));
     }
