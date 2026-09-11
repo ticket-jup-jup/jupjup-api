@@ -18,7 +18,7 @@ public class Program extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long external_program_id;
+    private Long externalProgramId;
 
     @Column(nullable = false, length = 255)
     private String name;
@@ -32,9 +32,20 @@ public class Program extends BaseEntity {
 
     private LocalDateTime deletedAt;
 
-    public Program(String name, ProgramType type, String description) {
+    public Program(Long externalProgramId, String name, ProgramType type, String description) {
+        this.externalProgramId = externalProgramId;
         this.name = name;
         this.type = type;
         this.description = description;
+    }
+
+    public void update(String name, ProgramType type, String description) {
+        this.name = name;
+        this.type = type;
+        this.description = description;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }

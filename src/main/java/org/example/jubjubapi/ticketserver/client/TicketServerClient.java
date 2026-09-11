@@ -2,12 +2,15 @@ package org.example.jubjubapi.ticketserver.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
+import org.example.jubjubapi.program.dto.TicketServerProgram;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerConfirmRequest;
 import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerReservationRequest;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerProgramResponse;
 import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerReservationResponse;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerApiException;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerProgramDataNotFoundException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerRequestRejectedException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +41,7 @@ public class TicketServerClient {
                 .build();
     }
 
+    // 사용자 인증
     public Optional<TicketServerUser> verify(String email, String password) {
         VerifyResponse response;
         try {
@@ -75,6 +79,27 @@ public class TicketServerClient {
     }
 
     public record TicketServerUser(Long userId, String email, String name) {
+    }
+
+    // 프로그램 조회
+    public List<TicketServerProgram> getPrograms() {
+        TicketServerProgramResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri("/api/programs")
+                    .retrieve()
+                    .body(TicketServerProgramResponse.class);
+        } catch (RestClientException e) {
+            log.error("티켓서버 프로그램 조회 실패: {}", e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            throw new TicketServerProgramDataNotFoundException("티켓서버에 프로그램 데이터가 없습니다.");
+        }
+
+        return response.getData();
     }
 
     // 임시 예약 요청
