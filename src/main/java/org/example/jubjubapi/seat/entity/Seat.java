@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.example.jubjubapi.performance.entity.Performance;
 
 @Entity
 @Table(name = "seats")
@@ -14,6 +15,10 @@ public class Seat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "performance_id")
+    private Performance performance;
 
     private Long externalSeatId;
 
@@ -31,5 +36,12 @@ public class Seat {
         this.section = section;
         this.seatRow = seatRow;
         this.seatNumber = seatNumber;
+    }
+
+    public boolean isSameInfo(Performance performance, String section, String seatRow, Integer seatNumber) {
+        return this.performance.equals(performance)
+                && this.section.equals(section)
+                && this.seatRow.equals(seatRow)
+                && this.seatNumber.equals(seatNumber);
     }
 }
