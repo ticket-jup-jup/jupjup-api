@@ -33,7 +33,7 @@ services:
       - ./k6:/scripts
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    entrypoint: ["sh", "-c", "k6 run -o experimental-prometheus-rw --tag testid=${TESTID:-baseline} /scripts/test.js"]
+    entrypoint: ["sh", "-c", "k6 run -o experimental-prometheus-rw --tag testid=${TESTID:-baseline} /scripts/${SCRIPT:-test.js}"]
 
 volumes:
   grafana_data:
