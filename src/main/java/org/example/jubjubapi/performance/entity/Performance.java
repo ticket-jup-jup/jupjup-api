@@ -23,30 +23,30 @@ import java.util.Objects;
 )
 public class Performance extends BaseEntity {
     @Id
-    @Column(name = "performance_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(
             name = "program_id",
             nullable = false,
             updatable = false
     )
     private Long programId;
+
+    private Long externalPerformanceId;
+
     @Column(
             name = "start_at",
             nullable = false
     )
     private LocalDateTime startAt;
-    @Column(
-            name = "program_name",
-            nullable = false,
-            length = 255
-    )
-    private String programName;
+
     @Column(
             name = "end_at",
             nullable = false
     )
     private LocalDateTime endAt;
+
     @Column(
             name = "venue",
             nullable = false,
@@ -81,9 +81,9 @@ public class Performance extends BaseEntity {
                 "프로그램 ID는 필수입니다."
         );
 
-        this.programName = Objects.requireNonNull(
-                programName,
-                "프로그램명은 필수입니다."
+        this.externalPerformanceId = Objects.requireNonNull(
+                programId,
+                "티켓서버 회차 ID는 필수입니다."
         );
 
         this.startAt = Objects.requireNonNull(
