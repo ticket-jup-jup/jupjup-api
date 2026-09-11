@@ -1,14 +1,14 @@
-package org.example.jubjubapi.ticket.client;
+package org.example.jubjubapi.ticketserver.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
-import org.example.jubjubapi.ticket.client.dto.request.TicketServerConfirmRequest;
-import org.example.jubjubapi.ticket.client.dto.request.TicketServerReservationRequest;
-import org.example.jubjubapi.ticket.client.dto.response.TicketServerReservationResponse;
-import org.example.jubjubapi.ticket.client.exception.TicketServerApiException;
-import org.example.jubjubapi.ticket.client.exception.TicketServerRequestRejectedException;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
+import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerConfirmRequest;
+import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerReservationRequest;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerReservationResponse;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerApiException;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerRequestRejectedException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -94,7 +94,7 @@ public class TicketServerClient {
             throw new TicketServerUnavailableException();
         }
 
-        if(response == null || !response.isValid()) {
+        if (response == null || !response.isValid()) {
             log.warn("티켓서버 임시예약 응답형식 오류: userId={}, ticketId={}", externalUserId, externalTicketId);
             throw new TicketServerUnavailableException();
         }
@@ -113,7 +113,7 @@ public class TicketServerClient {
         } catch (HttpClientErrorException e) {
             log.warn("티켓서버 예약 확정 거부: externalReservationId={}, status={}", externalReservationId, e.getStatusCode());
             throw new TicketServerRequestRejectedException();
-        }   catch (RestClientException e) {
+        } catch (RestClientException e) {
             log.error("티켓서버 통신 실패: externalReservationId={}, message={}", externalReservationId, e.getMessage());
             throw new TicketServerApiException();
         }

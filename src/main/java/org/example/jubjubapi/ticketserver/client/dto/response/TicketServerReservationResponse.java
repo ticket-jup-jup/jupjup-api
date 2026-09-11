@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.client.dto.response;
+package org.example.jubjubapi.ticketserver.client.dto.response;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket.client;
+package org.example.jubjubapi.ticketserver.client;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
