@@ -15,6 +15,8 @@ public class Seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long externalSeatId;
+
     @Column(nullable = false, length = 1)
     private String section;
 
