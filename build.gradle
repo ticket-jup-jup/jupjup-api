@@ -33,6 +33,7 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter
     implementation("org.redisson:redisson-spring-boot-starter:4.6.1")
     implementation 'org.apache.httpcomponents.client5:httpclient5'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'

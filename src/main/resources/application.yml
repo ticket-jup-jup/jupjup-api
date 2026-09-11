@@ -16,3 +16,10 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 3600000
 
+management:
+  metrics:
+    tags:
+      application: jupjup-server
+  endpoint:
+    health:
+      show-details: never
