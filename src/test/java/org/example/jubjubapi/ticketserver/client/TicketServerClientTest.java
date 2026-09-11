@@ -1,8 +1,11 @@
 package org.example.jubjubapi.ticketserver.client;
 
+import org.example.jubjubapi.performance.dto.TicketServerPerformance;
+import org.example.jubjubapi.performance.entity.PerformanceStatus;
 import org.example.jubjubapi.program.dto.TicketServerProgram;
 import org.example.jubjubapi.program.entity.ProgramType;
 import org.example.jubjubapi.ticket.exception.TicketException;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerPerformanceDataNotFoundException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerProgramDataNotFoundException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -145,6 +149,66 @@ class TicketServerClientTest {
 
         // when & then
         assertThatThrownBy(() -> ticketServerClient.getPrograms()).isInstanceOf(TicketServerProgramDataNotFoundException.class);
+
+        mockServer.verify();
+    }
+
+    @Test
+    void 회차_목록_조회() {
+        String responseJson = """
+                {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": 1,
+                      "startAt": "2026-10-01T19:00:00",
+                      "endAt": "2026-10-01T21:00:00",
+                      "venue": "공연장",
+                      "status": "UPCOMING"
+                    }
+                  ]
+                }
+                """;
+
+        mockServer.expect(
+                        requestTo(TICKET_SERVER_URL + "/api/performances?program=100")
+                )
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(
+                        withSuccess(responseJson, MediaType.APPLICATION_JSON)
+                );
+
+        List<TicketServerPerformance> result = ticketServerClient.getPerformances(100L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        assertThat(result.get(0).getStartAt()).isEqualTo(LocalDateTime.of(2026, 10, 1, 19, 0));
+        assertThat(result.get(0).getEndAt()).isEqualTo(LocalDateTime.of(2026, 10, 1, 21, 0));
+        assertThat(result.get(0).getVenue()).isEqualTo("공연장");
+        assertThat(result.get(0).getStatus()).isEqualTo(PerformanceStatus.UPCOMING);
+
+        mockServer.verify();
+    }
+
+    @Test
+    void 회차_데이터_없음_예외() {
+        String responseJson = """
+                {
+                  "success": true,
+                  "data": []
+                }
+                """;
+
+        mockServer.expect(
+                        requestTo(TICKET_SERVER_URL + "/api/performances?program=100")
+                )
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(
+                        withSuccess(responseJson, MediaType.APPLICATION_JSON)
+                );
+
+        assertThatThrownBy(() -> ticketServerClient.getPerformances(100L))
+                .isInstanceOf(TicketServerPerformanceDataNotFoundException.class);
 
         mockServer.verify();
     }

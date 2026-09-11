@@ -1,13 +1,13 @@
-package org.example.jubjubapi.performance.controller;
+package org.example.jubjubapi.performancewatch.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.global.dto.ApiResponse;
 import org.example.jubjubapi.global.security.jwt.JwtUserPrincipal;
-import org.example.jubjubapi.performance.dto.PerformanceWatchCreateRequest;
-import org.example.jubjubapi.performance.dto.PerformanceWatchResponse;
-import org.example.jubjubapi.performance.entity.PerformanceWatchStatus;
-import org.example.jubjubapi.performance.service.PerformanceWatchService;
+import org.example.jubjubapi.performancewatch.dto.PerformanceWatchCreateRequest;
+import org.example.jubjubapi.performancewatch.dto.PerformanceWatchResponse;
+import org.example.jubjubapi.performancewatch.entity.PerformanceWatchStatus;
+import org.example.jubjubapi.performancewatch.service.PerformanceWatchService;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.springframework.http.ResponseEntity;

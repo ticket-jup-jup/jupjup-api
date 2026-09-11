@@ -11,4 +11,6 @@ public interface ProgramRepository extends JpaRepository<Program, Long> {
     Optional<Program> findByExternalProgramId(Long externalProgramId);
 
     List<Program> findAllByDeletedAtIsNullAndExternalProgramIdNotIn(Set<Long> externalProgramIds);
+
+    List<Program> findAllByDeletedAtIsNull();
 }

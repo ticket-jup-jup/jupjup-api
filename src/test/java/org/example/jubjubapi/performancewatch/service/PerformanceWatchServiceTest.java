@@ -1,13 +1,14 @@
-package org.example.jubjubapi.ticket.performance.service;
+package org.example.jubjubapi.performancewatch.service;
 
-import org.example.jubjubapi.performance.dto.PerformanceWatchResponse;
 import org.example.jubjubapi.performance.entity.Performance;
 import org.example.jubjubapi.performance.entity.PerformanceStatus;
-import org.example.jubjubapi.performance.entity.PerformanceWatch;
-import org.example.jubjubapi.performance.entity.PerformanceWatchStatus;
 import org.example.jubjubapi.performance.repository.PerformanceRepository;
-import org.example.jubjubapi.performance.repository.PerformanceWatchRepository;
-import org.example.jubjubapi.performance.service.PerformanceWatchService;
+import org.example.jubjubapi.performancewatch.dto.PerformanceWatchResponse;
+import org.example.jubjubapi.performancewatch.entity.PerformanceWatch;
+import org.example.jubjubapi.performancewatch.entity.PerformanceWatchStatus;
+import org.example.jubjubapi.performancewatch.repository.PerformanceWatchRepository;
+import org.example.jubjubapi.program.entity.Program;
+import org.example.jubjubapi.program.entity.ProgramType;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.user.entity.User;
@@ -56,6 +57,7 @@ class PerformanceWatchServiceTest {
 
     private User user;
     private Performance performance;
+    private Program program;
 
     @BeforeEach
     void setUp() {
@@ -66,15 +68,24 @@ class PerformanceWatchServiceTest {
         );
         ReflectionTestUtils.setField(user, "id", USER_ID);
 
+        program = new Program(
+                100L,
+                "테스트 공연",
+                ProgramType.MUSICAL,
+                "테스트 공연 프로그램"
+        );
+        ReflectionTestUtils.setField(program, "id", 1L);
+
         performance = new Performance(
-                PERFORMANCE_ID,
+                program,
                 100L,
                 LocalDateTime.of(2026, 10, 1, 19, 0),
                 LocalDateTime.of(2026, 10, 1, 21, 0),
                 "공연장",
-                PerformanceStatus.UPCOMING,
-                "테스트 공연"
+                PerformanceStatus.UPCOMING
         );
+        
+        ReflectionTestUtils.setField(performance, "id", PERFORMANCE_ID);
     }
 
     @Test

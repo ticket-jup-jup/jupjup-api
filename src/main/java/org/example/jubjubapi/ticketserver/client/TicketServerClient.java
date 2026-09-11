@@ -2,14 +2,17 @@ package org.example.jubjubapi.ticketserver.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
+import org.example.jubjubapi.performance.dto.TicketServerPerformance;
 import org.example.jubjubapi.program.dto.TicketServerProgram;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerConfirmRequest;
 import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerReservationRequest;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerPerformanceResponse;
 import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerProgramResponse;
 import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerReservationResponse;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerApiException;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerPerformanceDataNotFoundException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerProgramDataNotFoundException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerRequestRejectedException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
@@ -97,6 +100,27 @@ public class TicketServerClient {
 
         if (response == null || response.getData() == null || response.getData().isEmpty()) {
             throw new TicketServerProgramDataNotFoundException("티켓서버에 프로그램 데이터가 없습니다.");
+        }
+
+        return response.getData();
+    }
+
+    // 회차 조회
+    public List<TicketServerPerformance> getPerformances(Long programId) {
+        TicketServerPerformanceResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri("/api/performances?program={programId}", programId)
+                    .retrieve()
+                    .body(TicketServerPerformanceResponse.class);
+        } catch (RestClientException e) {
+            log.error("티켓서버 회차 조회 실패: programId={}, message={}", programId, e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            throw new TicketServerPerformanceDataNotFoundException("티켓서버에 회차 데이터가 없습니다.");
         }
 
         return response.getData();

@@ -1,4 +1,4 @@
-package org.example.jubjubapi.performance.entity;
+package org.example.jubjubapi.performancewatch.entity;
 
 public enum PerformanceWatchStatus {
     ACTIVE,

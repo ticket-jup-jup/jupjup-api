@@ -1,12 +1,12 @@
-package org.example.jubjubapi.performance.service;
+package org.example.jubjubapi.performancewatch.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.jubjubapi.performance.dto.PerformanceWatchResponse;
 import org.example.jubjubapi.performance.entity.Performance;
-import org.example.jubjubapi.performance.entity.PerformanceWatch;
-import org.example.jubjubapi.performance.entity.PerformanceWatchStatus;
 import org.example.jubjubapi.performance.repository.PerformanceRepository;
-import org.example.jubjubapi.performance.repository.PerformanceWatchRepository;
+import org.example.jubjubapi.performancewatch.dto.PerformanceWatchResponse;
+import org.example.jubjubapi.performancewatch.entity.PerformanceWatch;
+import org.example.jubjubapi.performancewatch.entity.PerformanceWatchStatus;
+import org.example.jubjubapi.performancewatch.repository.PerformanceWatchRepository;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.user.entity.User;
