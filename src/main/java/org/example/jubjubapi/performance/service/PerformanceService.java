@@ -70,15 +70,6 @@ public class PerformanceService {
             List<Performance> deletedPerformances =
                     performanceRepository.findAllByProgramIdAndDeletedAtIsNullAndExternalPerformanceIdNotIn(program.getId(), externalPerformanceIds);
 
-            deletedPerformances.forEach(performance ->
-                    log.info(
-                            "삭제 대상 회차: jupJupId={}, externalPerformanceId={}, programId={}",
-                            performance.getId(),
-                            performance.getExternalPerformanceId(),
-                            performance.getProgram().getId()
-                    )
-            );
-
             deletedPerformances.forEach(Performance::delete);
         }
     }
