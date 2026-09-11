@@ -65,19 +65,12 @@ public class Performance extends BaseEntity {
     private LocalDateTime deletedAt;
 
     public Performance(
-            Long id,
             Long programId,
             LocalDateTime startAt,
             LocalDateTime endAt,
             String venue,
-            PerformanceStatus status,
-            String programName
+            PerformanceStatus status
     ) {
-        this.id = Objects.requireNonNull(
-                id,
-                "회차 ID는 필수입니다."
-        );
-
         this.programId = Objects.requireNonNull(
                 programId,
                 "프로그램 ID는 필수입니다."
