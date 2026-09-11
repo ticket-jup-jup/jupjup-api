@@ -1,4 +1,4 @@
-package org.example.jubjubapi.performance.dto;
+package org.example.jubjubapi.performancewatch.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

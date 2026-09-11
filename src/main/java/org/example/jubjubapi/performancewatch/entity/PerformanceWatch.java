@@ -1,10 +1,11 @@
-package org.example.jubjubapi.performance.entity;
+package org.example.jubjubapi.performancewatch.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
+import org.example.jubjubapi.performance.entity.Performance;
 import org.example.jubjubapi.user.entity.User;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
