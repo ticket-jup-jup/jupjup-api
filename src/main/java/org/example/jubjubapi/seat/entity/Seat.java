@@ -39,10 +39,17 @@ public class Seat {
         this.seatNumber = seatNumber;
     }
 
-    public boolean isSameInfo(Performance performance, String section, String seatRow, Integer seatNumber) {
+    public boolean isSameInfo(Performance performance, Long externalSeatId, String section, String seatRow, Integer seatNumber) {
         return this.performance.equals(performance)
+                && this.externalSeatId.equals(externalSeatId)
                 && this.section.equals(section)
                 && this.seatRow.equals(seatRow)
                 && this.seatNumber.equals(seatNumber);
+    }
+
+    public void update(String section, String seatRow, Integer seatNumber) {
+        this.section = section;
+        this.seatRow = seatRow;
+        this.seatNumber = seatNumber;
     }
 }

@@ -9,14 +9,14 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PerformanceScheduler {
+public class PerformanceAndSeatScheduler {
 
     private final PerformanceService performanceService;
 
-    @Scheduled(cron = "0 0 * * * *") // 매시간 정각마다 실행
-    public void getTicketServerProgram() {
-        log.info("티켓서버 회차 목록 조회 시작");
-        performanceService.getTicketServerPerformance();
-        log.info("티켓서버 회차 목록 조회 종료");
+    @Scheduled(cron = "0 0 * * * *")
+    public void getTicketServerPerformanceAndSeat() {
+        log.info("티켓서버 회차 및 좌석 목록 조회 시작");
+        performanceService.getTicketServerPerformanceAndSeat();
+        log.info("티켓서버 회차 및 좌석 목록 조회 종료");
     }
 }
