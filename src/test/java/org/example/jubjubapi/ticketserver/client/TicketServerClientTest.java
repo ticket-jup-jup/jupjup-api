@@ -1,7 +1,6 @@
-package org.example.jubjubapi.ticket.client;
+package org.example.jubjubapi.ticketserver.client;
 
 import org.example.jubjubapi.ticket.exception.TicketException;
-import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -90,4 +89,6 @@ class TicketServerClientTest {
         assertThatThrownBy(() -> ticketServerClient.createTemporaryReservation(1L, 1L))
                 .isInstanceOf(TicketServerUnavailableException.class);
     }
+
+
 }
