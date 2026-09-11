@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
+import org.example.jubjubapi.program.entity.Program;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -26,12 +27,13 @@ public class Performance extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
             name = "program_id",
             nullable = false,
             updatable = false
     )
-    private Long programId;
+    private Program program;
 
     private Long externalPerformanceId;
 
@@ -65,19 +67,20 @@ public class Performance extends BaseEntity {
     private LocalDateTime deletedAt;
 
     public Performance(
-            Long programId,
+            Program program,
+            Long externalPerformanceId,
             LocalDateTime startAt,
             LocalDateTime endAt,
             String venue,
             PerformanceStatus status
     ) {
-        this.programId = Objects.requireNonNull(
-                programId,
-                "프로그램 ID는 필수입니다."
+        this.program = Objects.requireNonNull(
+                program,
+                "프로그램은 필수입니다."
         );
 
         this.externalPerformanceId = Objects.requireNonNull(
-                programId,
+                externalPerformanceId,
                 "티켓서버 회차 ID는 필수입니다."
         );
 
