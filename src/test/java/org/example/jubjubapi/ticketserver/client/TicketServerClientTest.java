@@ -4,9 +4,11 @@ import org.example.jubjubapi.performance.dto.TicketServerPerformance;
 import org.example.jubjubapi.performance.entity.PerformanceStatus;
 import org.example.jubjubapi.program.dto.TicketServerProgram;
 import org.example.jubjubapi.program.entity.ProgramType;
+import org.example.jubjubapi.seat.dto.TicketServerSeat;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerPerformanceDataNotFoundException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerProgramDataNotFoundException;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerSeatDataNotFoundException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -212,4 +214,76 @@ class TicketServerClientTest {
 
         mockServer.verify();
     }
+
+    @Test
+    void 좌석_조회_성공() {
+        // given
+        String responseJson = """
+                {
+                    "success": true,
+                    "data": [
+                        {
+                            "id": 1,
+                            "performanceId": 100,
+                            "section": "A",
+                            "seatRow": "1",
+                            "seatNumber": 1
+                        },
+                        {
+                            "id": 2,
+                            "performanceId": 100,
+                            "section": "A",
+                            "seatRow": "1",
+                            "seatNumber": 2
+                        }
+                    ]
+                }
+                """;
+
+        mockServer.expect(requestTo(TICKET_SERVER_URL + "/api/seats?performance=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        // when
+        List<TicketServerSeat> result;
+        result = ticketServerClient.getSeats(100L);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo(1L);
+        assertThat(result.get(0).getPerformanceId()).isEqualTo(100L);
+        assertThat(result.get(0).getSection()).isEqualTo("A");
+        assertThat(result.get(0).getSeatRow()).isEqualTo("1");
+        assertThat(result.get(0).getSeatNumber()).isEqualTo(1);
+
+        assertThat(result.get(1).getId()).isEqualTo(2L);
+        assertThat(result.get(1).getPerformanceId()).isEqualTo(100L);
+        assertThat(result.get(1).getSection()).isEqualTo("A");
+        assertThat(result.get(1).getSeatRow()).isEqualTo("1");
+        assertThat(result.get(1).getSeatNumber()).isEqualTo(2);
+
+        mockServer.verify();
+    }
+
+    @Test
+    void 좌석_조회_데이터_없음() {
+        // given
+        String responseJson = """
+                {
+                    "success": true,
+                    "data": []
+                }
+                """;
+
+        mockServer.expect(requestTo(TICKET_SERVER_URL + "/api/seats?performance=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(responseJson, MediaType.APPLICATION_JSON));
+
+        // when & then
+        assertThatThrownBy(() -> ticketServerClient.getSeats(100L))
+                .isInstanceOf(TicketServerSeatDataNotFoundException.class);
+
+        mockServer.verify();
+    }
+
 }
