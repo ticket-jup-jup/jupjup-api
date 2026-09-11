@@ -62,6 +62,8 @@ public class Performance extends BaseEntity {
     )
     private PerformanceStatus status;
 
+    private LocalDateTime deletedAt;
+
     public Performance(
             Long id,
             Long programId,
@@ -117,5 +119,9 @@ public class Performance extends BaseEntity {
         this.endAt = Objects.requireNonNull(endAt);
         this.venue = Objects.requireNonNull(venue);
         this.status = Objects.requireNonNull(status);
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }
