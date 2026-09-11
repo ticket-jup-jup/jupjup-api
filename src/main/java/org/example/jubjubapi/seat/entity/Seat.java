@@ -31,7 +31,8 @@ public class Seat {
     @Column(nullable = false)
     private Integer seatNumber;
 
-    public Seat(Long externalSeatId, String section, String seatRow, Integer seatNumber) {
+    public Seat(Performance performance, Long externalSeatId, String section, String seatRow, Integer seatNumber) {
+        this.performance = performance;
         this.externalSeatId = externalSeatId;
         this.section = section;
         this.seatRow = seatRow;
