@@ -39,25 +39,31 @@ public class Ticket extends BaseEntity {
     @Column(name = "performance_id", nullable = false, updatable = false)
     private Long performanceId;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "status", nullable = false, length = 20)
     private TicketStatus status;
 
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
     @Builder
-    private Ticket(Long externalTicketId, Long performanceId,
-                   BigDecimal price, TicketStatus status) {
+    public Ticket(Long externalTicketId, Long performanceId, Seat seat, BigDecimal price, TicketStatus status) {
         this.externalTicketId = Objects.requireNonNull(externalTicketId, "외부 티켓 ID는 필수입니다.");
         this.performanceId = Objects.requireNonNull(performanceId, "회차 ID는 필수입니다.");
+        this.seat = seat;
         if (price == null || price.signum() < 0) {
             throw new TicketException(TicketErrorCode.INVALID_TICKET_PRICE);
         }
         this.price = price;
         // 이미 판매된 티켓도 동기화하므로 AVAILABLE을 기본값으로 삼지 않는다.
         this.status = Objects.requireNonNull(status, "티켓 상태는 필수입니다.");
+    }
+
+    public void update(TicketStatus status, BigDecimal price) {
+        this.status = status;
+        this.price = price;
     }
 
     // 호출하는 이벤트 처리 서비스가 중복·순서 검증을 먼저 수행해야 한다.
