@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
+import org.example.jubjubapi.seat.entity.Seat;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -28,13 +29,15 @@ public class Ticket extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seat_id")
+    private Seat seat;
 
     @Column(name = "external_ticket_id", nullable = false, updatable = false)
     private Long externalTicketId;//원본 티켓 서버의 ID.
 
     @Column(name = "performance_id", nullable = false, updatable = false)
     private Long performanceId;
-
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

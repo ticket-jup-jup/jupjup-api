@@ -21,9 +21,9 @@ public class InternalSyncController {
         programService.getTicketServerProgram();
     }
 
-    // 티켓서버 회차 수동 동기화
+    // 티켓서버 회차 수동 동기화(좌석 정보 포함)
     @PostMapping("/performances/sync")
     public void syncPerformances() {
-        performanceService.getTicketServerPerformance();
+        performanceService.getTicketServerPerformanceAndSeat();
     }
 }

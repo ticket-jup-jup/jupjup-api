@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.jubjubapi.payment.entity.PaymentMethod;
 import org.example.jubjubapi.performance.dto.TicketServerPerformance;
 import org.example.jubjubapi.program.dto.TicketServerProgram;
+import org.example.jubjubapi.seat.dto.TicketServerSeat;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerConfirmRequest;
@@ -11,10 +12,8 @@ import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerReserva
 import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerPerformanceResponse;
 import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerProgramResponse;
 import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerReservationResponse;
-import org.example.jubjubapi.ticketserver.client.exception.TicketServerApiException;
-import org.example.jubjubapi.ticketserver.client.exception.TicketServerPerformanceDataNotFoundException;
-import org.example.jubjubapi.ticketserver.client.exception.TicketServerProgramDataNotFoundException;
-import org.example.jubjubapi.ticketserver.client.exception.TicketServerRequestRejectedException;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerSeatResponse;
+import org.example.jubjubapi.ticketserver.client.exception.*;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -121,6 +120,27 @@ public class TicketServerClient {
 
         if (response == null || response.getData() == null || response.getData().isEmpty()) {
             throw new TicketServerPerformanceDataNotFoundException("티켓서버에 회차 데이터가 없습니다.");
+        }
+
+        return response.getData();
+    }
+
+    // 좌석 조회
+    public List<TicketServerSeat> getSeats(Long performanceId) {
+        TicketServerSeatResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri("/api/seats?performance={performanceId}", performanceId)
+                    .retrieve()
+                    .body(TicketServerSeatResponse.class);
+        } catch (RestClientException e) {
+            log.error("티켓서버 좌석 조회 실패: performanceId={}, message={}", performanceId, e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            throw new TicketServerSeatDataNotFoundException("티켓서버에 좌석 데이터가 없습니다.");
         }
 
         return response.getData();
