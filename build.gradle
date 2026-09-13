@@ -9,6 +9,10 @@ configurations {
     asciidoctorExt
 }
 
+asciidoctorj {
+    version = '3.0.0'
+}
+
 group = 'org.example'
 version = '0.0.1-SNAPSHOT'
 description = 'jubjub-api'
@@ -61,11 +65,21 @@ ext {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// 문서화 테스트(docs 패키지)만 실행하는 태스크
+tasks.register('docsTest', Test) {
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching '*ControllerTest'
+    }
     outputs.dir snippetsDir
 }
 
 tasks.named('asciidoctor') {
     inputs.dir snippetsDir
     configurations 'asciidoctorExt'
-    dependsOn test
+    dependsOn docsTest
 }
