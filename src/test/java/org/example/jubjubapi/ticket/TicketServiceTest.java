@@ -1,12 +1,19 @@
 package org.example.jubjubapi.ticket;
 
 import org.example.jubjubapi.global.exception.ServiceException;
+import org.example.jubjubapi.notification.event.TicketCanceledEvent;
+import org.example.jubjubapi.performance.service.PerformanceService;
+import org.example.jubjubapi.performancewatch.service.PerformanceWatchService;
+import org.example.jubjubapi.seat.repository.SeatRepository;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
-import org.example.jubjubapi.ticket.entity.*;
+import org.example.jubjubapi.ticket.dto.TicketServerTicket;
+import org.example.jubjubapi.ticket.entity.Ticket;
+import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
-import org.example.jubjubapi.ticket.repository.*;
+import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.ticket.service.TicketService;
+import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +21,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +40,11 @@ import static org.mockito.Mockito.*;
 class TicketServiceTest {
     private TicketRepository tickets;
     private UserRepository users;
+    private TicketServerClient ticketServerClient;
+    private PerformanceService performanceService;
+    private PerformanceWatchService performanceWatchService;
+    private SeatRepository seats;
+    private ApplicationEventPublisher eventPublisher;
     private TicketService service;
     private User user;
     private Ticket ticket;
@@ -42,7 +56,21 @@ class TicketServiceTest {
     void setUp() {
         tickets = mock(TicketRepository.class);
         users = mock(UserRepository.class);
-        service = new TicketService(tickets);
+        ticketServerClient = mock(TicketServerClient.class);
+        performanceService = mock(PerformanceService.class);
+        performanceWatchService = mock(PerformanceWatchService.class);
+        seats = mock(SeatRepository.class);
+        eventPublisher = mock(ApplicationEventPublisher.class);
+
+        service = new TicketService(
+                tickets,
+                ticketServerClient,
+                performanceService,
+                performanceWatchService,
+                seats,
+                eventPublisher
+        );
+
         user = User.create("test@example.com", "encoded-password", "사용자");
         ReflectionTestUtils.setField(user, "id", 1L);
         ticket = Ticket.builder().externalTicketId(100L).performanceId(10L)
@@ -53,8 +81,8 @@ class TicketServiceTest {
         when(tickets.findByIdForUpdate(2L)).thenReturn(Optional.of(ticket));
 
 
-
     }
+
     @Test
     @DisplayName("조회 조건의 회차 ID가 0 이하면 조회하지 않는다")
     void getTickets_invalidPerformanceId() {
@@ -88,6 +116,7 @@ class TicketServiceTest {
                 response.getStatus()
         );
     }
+
     @Test
     @DisplayName("티켓 ID가 0 이하면 저장소를 조회하지 않는다")
     void getTicket_invalidId() {
@@ -257,5 +286,95 @@ class TicketServiceTest {
         assertEquals(expected.getCode(), error.getCode());
         assertEquals(expected.getStatus(), error.getStatus());
         assertEquals(expected.getMessage(), error.getMessage());
+    }
+
+    @Test
+    void 티켓_상태값이_SOLD에서_AVAILALBE로_바뀌면_취소표_알림_이벤트_발행() {
+        // given
+        Long performanceId = 10L;
+        Long externalPerformanceId = 100L;
+
+        TicketServerTicket ticketServerTicket = new TicketServerTicket(
+                101L,
+                externalPerformanceId,
+                LocalDateTime.of(2026, 9, 10, 19, 30),
+                LocalDateTime.of(2026, 9, 10, 22, 0),
+                "잠실실내체육관",
+                1L,
+                new BigDecimal("100000.00"),
+                TicketStatus.AVAILABLE,
+                LocalDateTime.of(2026, 9, 3, 10, 0),
+                LocalDateTime.of(2026, 9, 3, 11, 0)
+        );
+
+        ticket = Ticket.builder()
+                .externalTicketId(101L)
+                .performanceId(performanceId)
+                .price(new BigDecimal("100000.00"))
+                .status(TicketStatus.SOLD)
+                .build();
+
+        ReflectionTestUtils.setField(ticket, "id", 1L);
+
+        when(performanceWatchService.getActivePerformanceIds()).thenReturn(List.of(performanceId));
+        when(performanceService.getExternalPerformanceId(performanceId)).thenReturn(externalPerformanceId);
+        when(ticketServerClient.getTickets(externalPerformanceId)).thenReturn(List.of(ticketServerTicket));
+        when(tickets.findByExternalTicketId(ticketServerTicket.getId())).thenReturn(Optional.of(ticket));
+
+        // when
+        service.pollTickets();
+
+        // then
+        ArgumentCaptor<TicketCanceledEvent> eventCaptor =
+                ArgumentCaptor.forClass(TicketCanceledEvent.class);
+
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        TicketCanceledEvent event = eventCaptor.getValue();
+
+        assertNotNull(event.eventId());
+        assertEquals(ticket.getId(), event.ticketId());
+        assertEquals(performanceId, event.performanceId());
+        assertNotNull(event.canceledAt());
+    }
+
+    @Test
+    void 티켓_목록_조회_전후_데이터의_상태값이_모두_SOLD이면_취소표_이벤트를_발행하지_않음() {
+        // given
+        Long performanceId = 10L;
+        Long externalPerformanceId = 100L;
+
+        TicketServerTicket ticketServerTicket = new TicketServerTicket(
+                101L,
+                externalPerformanceId,
+                LocalDateTime.of(2026, 9, 10, 19, 30),
+                LocalDateTime.of(2026, 9, 10, 22, 0),
+                "잠실실내체육관",
+                1L,
+                new BigDecimal("100000.00"),
+                TicketStatus.SOLD,
+                LocalDateTime.of(2026, 9, 3, 10, 0),
+                LocalDateTime.of(2026, 9, 3, 11, 0)
+        );
+
+        ticket = Ticket.builder()
+                .externalTicketId(101L)
+                .performanceId(performanceId)
+                .price(new BigDecimal("100000.00"))
+                .status(TicketStatus.SOLD)
+                .build();
+
+        ReflectionTestUtils.setField(ticket, "id", 1L);
+
+        when(performanceWatchService.getActivePerformanceIds()).thenReturn(List.of(performanceId));
+        when(performanceService.getExternalPerformanceId(performanceId)).thenReturn(externalPerformanceId);
+        when(ticketServerClient.getTickets(externalPerformanceId)).thenReturn(List.of(ticketServerTicket));
+        when(tickets.findByExternalTicketId(ticketServerTicket.getId())).thenReturn(Optional.of(ticket));
+
+        // when
+        service.pollTickets();
+
+        // then
+        verify(eventPublisher, never()).publishEvent(any(TicketCanceledEvent.class));
     }
 }

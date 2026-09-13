@@ -5,14 +5,12 @@ import org.example.jubjubapi.payment.entity.PaymentMethod;
 import org.example.jubjubapi.performance.dto.TicketServerPerformance;
 import org.example.jubjubapi.program.dto.TicketServerProgram;
 import org.example.jubjubapi.seat.dto.TicketServerSeat;
+import org.example.jubjubapi.ticket.dto.TicketServerTicket;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerConfirmRequest;
 import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerReservationRequest;
-import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerPerformanceResponse;
-import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerProgramResponse;
-import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerReservationResponse;
-import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerSeatResponse;
+import org.example.jubjubapi.ticketserver.client.dto.response.*;
 import org.example.jubjubapi.ticketserver.client.exception.*;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.springframework.beans.factory.annotation.Value;
@@ -141,6 +139,27 @@ public class TicketServerClient {
 
         if (response == null || response.getData() == null || response.getData().isEmpty()) {
             throw new TicketServerSeatDataNotFoundException("티켓서버에 좌석 데이터가 없습니다.");
+        }
+
+        return response.getData();
+    }
+
+    // 티켓 조회
+    public List<TicketServerTicket> getTickets(Long performanceId) {
+        TicketServerTicketResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri("/api/internal/tickets?performance={performanceId}", performanceId)
+                    .retrieve()
+                    .body(TicketServerTicketResponse.class);
+        } catch (RestClientException e) {
+            log.error("티켓서버 티켓 조회 실패: performanceId={}, message={}", performanceId, e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            throw new TicketServerTicketDataNotFoundException("티켓서버에 티켓 데이터가 없습니다.");
         }
 
         return response.getData();
