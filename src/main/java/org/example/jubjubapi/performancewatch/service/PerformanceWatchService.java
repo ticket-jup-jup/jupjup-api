@@ -191,4 +191,12 @@ public class PerformanceWatchService {
                 .map(performanceWatch -> performanceWatch.getPerformance().getId())
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public boolean hasActiveWatch(Long performanceId) {
+        return performanceWatchRepository.existsByPerformanceIdAndStatus(
+                performanceId,
+                PerformanceWatchStatus.ACTIVE
+        );
+    }
 }

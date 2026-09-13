@@ -8,6 +8,7 @@ import org.example.jubjubapi.performancewatch.service.PerformanceWatchService;
 import org.example.jubjubapi.seat.entity.Seat;
 import org.example.jubjubapi.seat.exception.SeatNotFoundException;
 import org.example.jubjubapi.seat.repository.SeatRepository;
+import org.example.jubjubapi.ticket.dto.TicketCanceledWebhookRequest;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
 import org.example.jubjubapi.ticket.dto.TicketServerTicket;
 import org.example.jubjubapi.ticket.entity.Ticket;
@@ -143,6 +144,71 @@ public class TicketService {
                         );
             }
         }
+    }
+
+    @Transactional
+    public void handleTicketCanceled(TicketCanceledWebhookRequest request) {
+        // 취소표 알림 설정이 된 회차인지 확인
+        // 취소표 알림 설정된 회차만 이후 로직 실행
+        if (!performanceWatchService.hasActiveWatch(request.getPerformanceId())) {
+            log.info("취소표 알림 설정이 없는 회차입니다. performanceId={}", request.getPerformanceId());
+            return;
+        }
+
+        // external_ticket_id로 ticket 데이터 조회
+        Ticket ticket = ticketRepository.findByExternalTicketId(request.getTicketId())
+                // 기존 데이터가 있으면 업데이트
+                .map(existingTicket -> {
+                    TicketStatus previousStatus = existingTicket.getStatus();
+
+                    existingTicket.update(
+                            TicketStatus.AVAILABLE,
+                            request.getPrice()
+                    );
+
+                    // 기존에 저장된 티켓 상태가 SOLD였으면 취소표 알림 이벤트 실행
+                    if (previousStatus == TicketStatus.SOLD) {
+                        publishTicketCanceledEvent(
+                                existingTicket,
+                                request.getPerformanceId(),
+                                request.getCanceledAt()
+                        );
+                    }
+
+                    return existingTicket;
+                })
+                // 없으면 신규 티켓 데이터 생성
+                .orElseGet(() -> {
+                    Seat seat = seatRepository
+                            .findByPerformanceIdAndExternalSeatId(
+                                    request.getPerformanceId(),
+                                    request.getSeatId()
+                            ).orElseThrow(() -> new SeatNotFoundException("존재하지 않는 좌석입니다."));
+
+                    Ticket newTicket = ticketRepository.save(
+                            new Ticket(
+                                    request.getTicketId(),
+                                    request.getPerformanceId(),
+                                    seat,
+                                    request.getPrice(),
+                                    TicketStatus.AVAILABLE
+                            )
+                    );
+
+                    // 취소표 알림 이벤트 실행
+                    publishTicketCanceledEvent(
+                            newTicket,
+                            request.getPerformanceId(),
+                            request.getCanceledAt()
+                    );
+
+                    return newTicket;
+                });
+
+        log.info("취소표 webhook 처리 완료. externalTicketId={}, performanceId={}",
+                request.getTicketId(),
+                request.getPerformanceId()
+        );
     }
 
     //공통함수
