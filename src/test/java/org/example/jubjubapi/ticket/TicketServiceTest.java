@@ -4,7 +4,9 @@ import org.example.jubjubapi.global.exception.ServiceException;
 import org.example.jubjubapi.notification.event.TicketCanceledEvent;
 import org.example.jubjubapi.performance.service.PerformanceService;
 import org.example.jubjubapi.performancewatch.service.PerformanceWatchService;
+import org.example.jubjubapi.seat.entity.Seat;
 import org.example.jubjubapi.seat.repository.SeatRepository;
+import org.example.jubjubapi.ticket.dto.TicketCanceledWebhookRequest;
 import org.example.jubjubapi.ticket.dto.TicketResponse;
 import org.example.jubjubapi.ticket.dto.TicketServerTicket;
 import org.example.jubjubapi.ticket.entity.Ticket;
@@ -376,5 +378,179 @@ class TicketServiceTest {
 
         // then
         verify(eventPublisher, never()).publishEvent(any(TicketCanceledEvent.class));
+    }
+
+    @Test
+    void Webhook으로_들어온_회차가_취소표_알림_설정에_없으면_패스() {
+        // given
+        Long externalTicketId = 101L;
+        Long performanceId = 10L;
+        Long seatId = 1L;
+        BigDecimal price = new BigDecimal("100000.00");
+        LocalDateTime canceledAt = LocalDateTime.of(2026, 9, 12, 10, 0);
+
+        TicketCanceledWebhookRequest request = new TicketCanceledWebhookRequest(
+                externalTicketId,
+                performanceId,
+                seatId,
+                price,
+                canceledAt
+        );
+
+        when(performanceWatchService.hasActiveWatch(performanceId)).thenReturn(false);
+
+        // when
+        service.handleTicketCanceled(request);
+
+        // then
+        verify(tickets, never()).findByExternalTicketId(anyLong());
+        verify(tickets, never()).save(any(Ticket.class));
+        verify(eventPublisher, never()).publishEvent(any(TicketCanceledEvent.class));
+    }
+
+    @Test
+    void Webhook으로_기존_티켓_상태가_SOLD인_항목_AVAILALBE로_변경되면_취소표_알림_이벤트_발행() {
+        // given
+        Long externalTicketId = 101L;
+        Long performanceId = 10L;
+        Long seatId = 1L;
+        BigDecimal price = new BigDecimal("100000.00");
+        LocalDateTime canceledAt = LocalDateTime.of(2026, 9, 12, 10, 0);
+
+        TicketCanceledWebhookRequest request = new TicketCanceledWebhookRequest(
+                externalTicketId,
+                performanceId,
+                seatId,
+                price,
+                canceledAt
+        );
+
+        ticket = Ticket.builder()
+                .externalTicketId(externalTicketId)
+                .performanceId(performanceId)
+                .price(price)
+                .status(TicketStatus.SOLD)
+                .build();
+
+        ReflectionTestUtils.setField(ticket, "id", 1L);
+
+        when(performanceWatchService.hasActiveWatch(performanceId)).thenReturn(true);
+        when(tickets.findByExternalTicketId(externalTicketId)).thenReturn(Optional.of(ticket));
+
+        // when
+        service.handleTicketCanceled(request);
+
+        // then
+        assertEquals(TicketStatus.AVAILABLE, ticket.getStatus());
+        assertEquals(price, ticket.getPrice());
+
+        ArgumentCaptor<TicketCanceledEvent> eventCaptor = ArgumentCaptor.forClass(TicketCanceledEvent.class);
+
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        TicketCanceledEvent event = eventCaptor.getValue();
+
+        assertNotNull(event.eventId());
+        assertEquals(ticket.getId(), event.ticketId());
+        assertEquals(performanceId, event.performanceId());
+        assertEquals(canceledAt, event.canceledAt());
+    }
+
+    @Test
+    void 기존_티켓_상태가_AVAILABLE인_항목에_Webhook이_발생하면_취소표_알림_이벤트를_발행하지_않음() {
+        // given
+        Long externalTicketId = 101L;
+        Long performanceId = 10L;
+        Long seatId = 1L;
+        BigDecimal price = new BigDecimal("100000.00");
+        LocalDateTime canceledAt = LocalDateTime.of(2026, 9, 12, 10, 0);
+
+        TicketCanceledWebhookRequest request = new TicketCanceledWebhookRequest(
+                externalTicketId,
+                performanceId,
+                seatId,
+                price,
+                canceledAt
+        );
+
+        ticket = Ticket.builder()
+                .externalTicketId(externalTicketId)
+                .performanceId(performanceId)
+                .price(price)
+                .status(TicketStatus.AVAILABLE)
+                .build();
+
+        ReflectionTestUtils.setField(ticket, "id", 1L);
+
+        when(performanceWatchService.hasActiveWatch(performanceId)).thenReturn(true);
+        when(tickets.findByExternalTicketId(externalTicketId)).thenReturn(Optional.of(ticket));
+
+        // when
+        service.handleTicketCanceled(request);
+
+        // then
+        assertEquals(TicketStatus.AVAILABLE, ticket.getStatus());
+        verify(eventPublisher, never()).publishEvent(any(TicketCanceledEvent.class));
+    }
+
+    @Test
+    void Webhook_기존에_저장된_티켓_데이터가_없으면_티켓을_생성하고_취소표_알림_이벤트_발행() {
+        // given
+        Long externalTicketId = 101L;
+        Long performanceId = 10L;
+        Long seatId = 1L;
+        BigDecimal price = new BigDecimal("100000.00");
+        LocalDateTime canceledAt = LocalDateTime.of(2026, 9, 12, 10, 0);
+
+        TicketCanceledWebhookRequest request = new TicketCanceledWebhookRequest(
+                externalTicketId,
+                performanceId,
+                seatId,
+                price,
+                canceledAt
+        );
+
+        Seat seat = mock(Seat.class);
+
+        Ticket newTicket = Ticket.builder()
+                .externalTicketId(externalTicketId)
+                .performanceId(performanceId)
+                .price(price)
+                .status(TicketStatus.AVAILABLE)
+                .build();
+
+        ReflectionTestUtils.setField(newTicket, "id", 1L);
+
+        when(performanceWatchService.hasActiveWatch(performanceId)).thenReturn(true);
+        when(tickets.findByExternalTicketId(externalTicketId)).thenReturn(Optional.empty());
+        when(seats.findByPerformanceIdAndExternalSeatId(performanceId, seatId)).thenReturn(Optional.of(seat));
+        when(tickets.save(any(Ticket.class))).thenReturn(newTicket);
+
+        // when
+        service.handleTicketCanceled(request);
+
+        // then
+        ArgumentCaptor<Ticket> ticketCaptor = ArgumentCaptor.forClass(Ticket.class);
+
+        verify(tickets).save(ticketCaptor.capture());
+
+        Ticket savedTicket = ticketCaptor.getValue();
+
+        assertEquals(externalTicketId, savedTicket.getExternalTicketId());
+        assertEquals(performanceId, savedTicket.getPerformanceId());
+        assertEquals(seat, savedTicket.getSeat());
+        assertEquals(price, savedTicket.getPrice());
+        assertEquals(TicketStatus.AVAILABLE, savedTicket.getStatus());
+
+        ArgumentCaptor<TicketCanceledEvent> eventCaptor = ArgumentCaptor.forClass(TicketCanceledEvent.class);
+
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        TicketCanceledEvent event = eventCaptor.getValue();
+
+        assertNotNull(event.eventId());
+        assertEquals(newTicket.getId(), event.ticketId());
+        assertEquals(performanceId, event.performanceId());
+        assertEquals(canceledAt, event.canceledAt());
     }
 }
