@@ -453,7 +453,7 @@ class TicketServiceTest {
         assertNotNull(event.eventId());
         assertEquals(ticket.getId(), event.ticketId());
         assertEquals(performanceId, event.performanceId());
-        assertEquals(canceledAt, event.canceledAt());
+        assertEquals(canceledAt.toString(), event.canceledAt());
     }
 
     @Test
@@ -551,6 +551,6 @@ class TicketServiceTest {
         assertNotNull(event.eventId());
         assertEquals(newTicket.getId(), event.ticketId());
         assertEquals(performanceId, event.performanceId());
-        assertEquals(canceledAt, event.canceledAt());
+        assertEquals(canceledAt.toString(), event.canceledAt());
     }
 }
