@@ -33,7 +33,7 @@ class NotificationServiceTest {
     @InjectMocks NotificationService notificationService;
 
     private final TicketCanceledEvent event =
-            new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now());
+            new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now().toString());
 
     private PerformanceWatch watchOf(Long userId) {
         User user = mock(User.class);

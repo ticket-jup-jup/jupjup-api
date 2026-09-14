@@ -6,6 +6,6 @@ public record TicketCanceledEvent(
         String eventId,
         Long ticketId,
         Long performanceId,
-        LocalDateTime canceledAt
+        String canceledAt
 ) {
 }

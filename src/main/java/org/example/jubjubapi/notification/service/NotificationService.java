@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -47,7 +48,7 @@ public class NotificationService {
             }
             try {
                 notificationRepository.save(Notification.ticketCanceled(
-                        event.eventId(), watch.getUser(), ticket, event.performanceId(), event.canceledAt()));
+                        event.eventId(), watch.getUser(), ticket, event.performanceId(), LocalDateTime.parse(event.canceledAt())));
                 created++;
             } catch (DataIntegrityViolationException e) {
                 // 2차: 동시 처리로 유니크 제약에 걸린 경우 — 이미 알림 있음, 정상 케이스

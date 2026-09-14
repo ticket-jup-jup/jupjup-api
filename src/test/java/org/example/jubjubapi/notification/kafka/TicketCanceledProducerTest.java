@@ -29,7 +29,7 @@ class TicketCanceledProducerTest {
     void on_sendsToKafka() {
         // given
         TicketCanceledEvent event =
-                new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now());
+                new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now().toString());
 
         when(kafkaTemplate.send(any(), any(), any()))
                 .thenReturn(CompletableFuture.completedFuture(null));
@@ -46,7 +46,7 @@ class TicketCanceledProducerTest {
     void on_logsOnFailure() {
         // given
         TicketCanceledEvent event =
-                new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now());
+                new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now().toString());
         CompletableFuture<SendResult<String, TicketCanceledEvent>> failed =
                 CompletableFuture.failedFuture(new RuntimeException("broker down"));
         when(kafkaTemplate.send(any(), any(), any())).thenReturn(failed);

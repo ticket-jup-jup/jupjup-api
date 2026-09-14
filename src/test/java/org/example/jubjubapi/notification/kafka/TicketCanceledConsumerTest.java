@@ -24,7 +24,7 @@ class TicketCanceledConsumerTest {
     @Test
     @DisplayName("메시지를 받으면 NotificationService에 그대로 위임한다")
     void handle_delegates() {
-        TicketCanceledEvent event = new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now());
+        TicketCanceledEvent event = new TicketCanceledEvent("evt-1", 10L, 3L, LocalDateTime.now().toString());
         consumer.handle(event);
         verify(notificationService).notifySubscribers(event);
     }
