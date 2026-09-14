@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "notification",
+@Table(name = "notifications",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_notification_event_user",
                 columnNames = {"event_id", "user_id"}))   // 최종 중복 방어선
