@@ -183,4 +183,12 @@ public class PerformanceWatchService {
                 )
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<Long> getActivePerformanceIds() {
+        return performanceWatchRepository.findAllByStatus(PerformanceWatchStatus.ACTIVE)
+                .stream()
+                .map(performanceWatch -> performanceWatch.getPerformance().getId())
+                .toList();
+    }
 }

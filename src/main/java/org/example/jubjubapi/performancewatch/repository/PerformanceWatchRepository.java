@@ -42,4 +42,6 @@ public interface PerformanceWatchRepository extends JpaRepository<PerformanceWat
             Long performanceId,
             PerformanceWatchStatus status
     );
+
+    List<PerformanceWatch> findAllByStatus(PerformanceWatchStatus performanceWatchStatus);
 }

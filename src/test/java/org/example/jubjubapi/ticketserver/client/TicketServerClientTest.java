@@ -5,10 +5,13 @@ import org.example.jubjubapi.performance.entity.PerformanceStatus;
 import org.example.jubjubapi.program.dto.TicketServerProgram;
 import org.example.jubjubapi.program.entity.ProgramType;
 import org.example.jubjubapi.seat.dto.TicketServerSeat;
+import org.example.jubjubapi.ticket.dto.TicketServerTicket;
+import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerPerformanceDataNotFoundException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerProgramDataNotFoundException;
 import org.example.jubjubapi.ticketserver.client.exception.TicketServerSeatDataNotFoundException;
+import org.example.jubjubapi.ticketserver.client.exception.TicketServerTicketDataNotFoundException;
 import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -282,6 +285,77 @@ class TicketServerClientTest {
         // when & then
         assertThatThrownBy(() -> ticketServerClient.getSeats(100L))
                 .isInstanceOf(TicketServerSeatDataNotFoundException.class);
+
+        mockServer.verify();
+    }
+
+    @Test
+    void 티켓서버_티켓_조회_성공() {
+        // given
+        Long performanceId = 100L;
+
+        String responseBody = """
+                {
+                    "success": true,
+                    "data": [
+                        {
+                            "id": 101,
+                            "performanceId": 100,
+                            "startAt": "2026-09-10T19:30:00",
+                            "endAt": "2026-09-10T22:00:00",
+                            "venue": "잠실실내체육관",
+                            "seatId": 1,
+                            "price": 100000.00,
+                            "status": "AVAILABLE",
+                            "createdAt": "2026-09-03T10:00:00",
+                            "updatedAt": "2026-09-03T11:00:00"
+                        }
+                    ],
+                    "error": null
+                }
+                """;
+
+        mockServer.expect(requestTo(
+                        TICKET_SERVER_URL + "/api/internal/tickets?performance=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(responseBody, MediaType.APPLICATION_JSON));
+
+        // when
+        List<TicketServerTicket> result = ticketServerClient.getTickets(performanceId);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(101L);
+        assertThat(result.get(0).getPerformanceId()).isEqualTo(100L);
+        assertThat(result.get(0).getSeatId()).isEqualTo(1L);
+        assertThat(result.get(0).getPrice()).isEqualByComparingTo("100000.00");
+        assertThat(result.get(0).getStatus()).isEqualTo(TicketStatus.AVAILABLE);
+
+        mockServer.verify();
+    }
+
+    @Test
+    void 티켓서버_티켓_데이터가_없으면_예외() {
+        // given
+        Long performanceId = 100L;
+
+        String responseBody = """
+                {
+                    "success": true,
+                    "data": [],
+                    "error": null
+                }
+                """;
+
+        mockServer.expect(requestTo(
+                        TICKET_SERVER_URL + "/api/internal/tickets?performance=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(responseBody, MediaType.APPLICATION_JSON));
+
+        // when & then
+        assertThatThrownBy(() -> ticketServerClient.getTickets(performanceId))
+                .isInstanceOf(TicketServerTicketDataNotFoundException.class)
+                .hasMessage("티켓서버에 티켓 데이터가 없습니다.");
 
         mockServer.verify();
     }

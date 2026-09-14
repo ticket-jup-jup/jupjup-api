@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.jubjubapi.performance.dto.TicketServerPerformance;
 import org.example.jubjubapi.performance.entity.Performance;
+import org.example.jubjubapi.performance.exception.PerformanceNotFoundException;
 import org.example.jubjubapi.performance.repository.PerformanceRepository;
 import org.example.jubjubapi.program.entity.Program;
 import org.example.jubjubapi.program.repository.ProgramRepository;
@@ -85,5 +86,12 @@ public class PerformanceService {
 
             deletedPerformances.forEach(Performance::delete);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Long getExternalPerformanceId(Long performanceId) {
+        return performanceRepository.findById(performanceId)
+                .map(Performance::getExternalPerformanceId)
+                .orElseThrow(() -> new PerformanceNotFoundException("존재하지 않는 회차입니다."));
     }
 }
