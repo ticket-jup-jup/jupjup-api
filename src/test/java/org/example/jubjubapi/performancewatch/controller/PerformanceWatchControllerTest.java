@@ -24,6 +24,8 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -120,6 +122,33 @@ class PerformanceWatchControllerTest {
                                         .type(JsonFieldType.OBJECT)
                                         .optional()
                                         .description("성공 시 null")
+                        )
+                ));
+    }
+
+    @Test
+    void 취소표_알림_구독_해제() throws Exception {
+
+        mockMvc.perform(
+                        org.springframework.restdocs.mockmvc
+                                .RestDocumentationRequestBuilders
+                                .delete(
+                                        "/api/performance-watches/{watchId}",
+                                        1L
+                                )
+                                .with(authentication(userToken()))
+                )
+                .andExpect(status().isNoContent())
+
+                .andDo(document(
+                        "performance-watch-delete",
+
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        pathParameters(
+                                parameterWithName("watchId")
+                                        .description("해제할 구독 ID")
                         )
                 ));
     }
