@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
+import org.example.jubjubapi.performance.entity.Performance;
+import org.example.jubjubapi.seat.entity.Seat;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.user.entity.User;
 
@@ -55,12 +57,16 @@ public class Notification extends BaseEntity {
 
     public static Notification ticketCanceled(String eventId, User user, Ticket ticket,
                                               Long performanceId, LocalDateTime canceledAt) {
-        String content = String.format("[%s] %s %s %s열 %s번 취소표가 나왔어요!",
-                ticket.getProgramName(),
-                ticket.getStartAt().toLocalDate(),
-                ticket.getSeatGrade(),
-                ticket.getRowNumber(),
-                ticket.getSeatNumber());
+        Seat seat = ticket.getSeat();
+        Performance performance = seat.getPerformance();
+
+        String content = String.format("[%s] %s %s구역 %s열 %d번 취소표가 나왔어요!",
+                performance.getProgram().getName(),
+                performance.getStartAt().toLocalDate(),
+                seat.getSection(),
+                seat.getSeatRow(),
+                seat.getSeatNumber());
+
         return new Notification(eventId, user, ticket, performanceId, content, canceledAt);
     }
 }

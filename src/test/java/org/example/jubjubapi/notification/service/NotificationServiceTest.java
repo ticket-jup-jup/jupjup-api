@@ -49,7 +49,7 @@ class NotificationServiceTest {
         // given
         PerformanceWatch w1 = watchOf(1L);
         PerformanceWatch w2 = watchOf(2L);
-        when(ticketRepository.findById(10L)).thenReturn(Optional.of(mock(Ticket.class)));
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(mock(Ticket.class, RETURNS_DEEP_STUBS)));
         when(performanceWatchRepository.findByPerformance_IdAndStatus(3L, PerformanceWatchStatus.ACTIVE))
                 .thenReturn(List.of(w1, w2));
         when(notificationRepository.existsByEventIdAndUser_Id("evt-1", 1L)).thenReturn(true);   // 이미 있음
@@ -66,7 +66,7 @@ class NotificationServiceTest {
     @DisplayName("구독자가 없으면 아무것도 저장하지 않는다")
     void notifySubscribers_noWatchers() {
         // given
-        when(ticketRepository.findById(10L)).thenReturn(Optional.of(mock(Ticket.class)));
+        when(ticketRepository.findById(10L)).thenReturn(Optional.of(mock(Ticket.class, RETURNS_DEEP_STUBS)));
         when(performanceWatchRepository.findByPerformance_IdAndStatus(3L, PerformanceWatchStatus.ACTIVE))
                 .thenReturn(List.of());
 
