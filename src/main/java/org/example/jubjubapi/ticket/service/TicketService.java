@@ -234,7 +234,7 @@ public class TicketService {
                         UUID.randomUUID().toString(),
                         ticket.getId(),
                         performanceId,
-                        canceledAt
+                        canceledAt.toString()
                 )
         );
     }
