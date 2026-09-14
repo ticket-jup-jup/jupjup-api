@@ -228,6 +228,31 @@ class TicketControllerTest {
                 ));
     }
 
+    @Test
+    void 티켓_삭제() throws Exception {
+
+        mockMvc.perform(
+                        org.springframework.restdocs.mockmvc
+                                .RestDocumentationRequestBuilders
+                                .delete("/api/tickets/{ticketId}", 1L)
+
+                                .with(authentication(adminToken()))
+                )
+                .andExpect(status().isNoContent())
+
+                .andDo(document(
+                        "ticket-delete",
+
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        pathParameters(
+                                parameterWithName("ticketId")
+                                        .description("삭제할 티켓 ID")
+                        )
+                ));
+    }
+
     //jwt USER/ADMIN
     private JwtAuthenticationToken userToken() {
         return new JwtAuthenticationToken(
