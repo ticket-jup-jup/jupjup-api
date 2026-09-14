@@ -149,6 +149,86 @@ class TicketControllerTest {
                 ));
     }
 
+    @Test
+    void 티켓_단건_조회() throws Exception {
+
+        LocalDateTime now =
+                LocalDateTime.of(2026, 9, 15, 12, 0);
+
+        TicketResponse response =
+                new TicketResponse(
+                        1L,
+                        101L,
+                        BigDecimal.valueOf(150000),
+                        TicketStatus.AVAILABLE,
+                        now,
+                        now
+                );
+
+        given(ticketService.getTicket(1L))
+                .willReturn(response);
+
+        mockMvc.perform(
+                        org.springframework.restdocs.mockmvc
+                                .RestDocumentationRequestBuilders
+                                .get("/api/tickets/{ticketId}", 1L)
+                                .with(authentication(userToken()))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(document(
+                        "ticket-detail",
+
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        pathParameters(
+                                parameterWithName("ticketId")
+                                        .description("조회할 티켓 ID")
+                        ),
+
+                        responseFields(
+                                fieldWithPath("success")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("성공 여부"),
+
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("티켓 정보"),
+
+                                fieldWithPath("data[].id")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 ID"),
+
+                                fieldWithPath("data[].externalTicketId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 서버의 티켓 ID"),
+
+                                fieldWithPath("data[].price")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 가격"),
+
+                                fieldWithPath("data[].status")
+                                        .type(JsonFieldType.STRING)
+                                        .description("티켓 상태"),
+
+                                fieldWithPath("data[].createdAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("생성 일시"),
+
+                                fieldWithPath("data[].updatedAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("수정 일시"),
+
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .optional()
+                                        .description("성공 시 null")
+                        )
+                ));
+    }
+
+    //jwt USER/ADMIN
     private JwtAuthenticationToken userToken() {
         return new JwtAuthenticationToken(
                 new JwtUserPrincipal(
