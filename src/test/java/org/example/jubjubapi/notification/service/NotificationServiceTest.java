@@ -3,10 +3,10 @@ package org.example.jubjubapi.notification.service;
 import org.example.jubjubapi.notification.entity.Notification;
 import org.example.jubjubapi.notification.event.TicketCanceledEvent;
 import org.example.jubjubapi.notification.repository.NotificationRepository;
-import org.example.jubjubapi.ticket.entity.PerformanceWatch;               // 김씨 (이름 확인)
-import org.example.jubjubapi.ticket.entity.PerformanceWatchStatus;         // 김씨 (이름 확인)
+import org.example.jubjubapi.performancewatch.entity.PerformanceWatch;
+import org.example.jubjubapi.performancewatch.entity.PerformanceWatchStatus;
+import org.example.jubjubapi.performancewatch.repository.PerformanceWatchRepository;
 import org.example.jubjubapi.ticket.entity.Ticket;
-import org.example.jubjubapi.ticket.repository.PerformanceWatchRepository; // 김씨 (이름 확인)
 import org.example.jubjubapi.ticket.repository.TicketRepository;
 import org.example.jubjubapi.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +28,8 @@ class NotificationServiceTest {
 
     @Mock NotificationRepository notificationRepository;
     @Mock TicketRepository ticketRepository;
-    @Mock PerformanceWatchRepository performanceWatchRepository;
+    @Mock
+    PerformanceWatchRepository performanceWatchRepository;
     @InjectMocks NotificationService notificationService;
 
     private final TicketCanceledEvent event =
