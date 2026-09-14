@@ -41,7 +41,7 @@ class TicketWebhookControllerTest {
     JwtProvider jwtProvider;
 
     @Test
-    void 취소표_상태_webhook_수신() throws Exception {
+    void 취소표_webhook_수신() throws Exception {
 
         String body = """
                 {

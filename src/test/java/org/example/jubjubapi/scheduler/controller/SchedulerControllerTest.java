@@ -42,7 +42,40 @@ class SchedulerControllerTest {
     JwtProvider jwtProvider;
 
     @Test
-    void 취소표_polling() throws Exception {
+    void 프로그램_동기화() throws Exception {
+
+        mockMvc.perform(
+                        post("/api/internal/scheduler/program-sync")
+                )
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "program-sync",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())
+                ));
+
+        verify(programService).getTicketServerProgram();
+    }
+
+    @Test
+    void 회차_및_좌석_동기화() throws Exception {
+
+        mockMvc.perform(
+                        post("/api/internal/scheduler/performance-seat-sync")
+                )
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "performance-seat-sync",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())
+                ));
+
+        verify(performanceService)
+                .getTicketServerPerformanceAndSeat();
+    }
+
+    @Test
+    void 티켓_동기화() throws Exception {
 
         mockMvc.perform(
                         post("/api/internal/scheduler/ticket-polling")

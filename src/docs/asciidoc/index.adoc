@@ -90,3 +90,32 @@ operation::performance-watch-list[snippets='http-request,query-parameters,http-r
 
 
 operation::performance-watch-delete[snippets='path-parameters,http-request,http-response']
+
+
+== 취소표 감지
+
+=== 취소표 Webhook 수신
+
+operation::ticket-webhook-canceled[snippets='http-request,request-fields,http-response,response-fields']
+
+== 내부 데이터 동기화
+
+=== 프로그램 동기화
+
+티켓 서버의 프로그램 정보를 동기화한다.
+
+operation::program-sync[snippets='http-request,http-response']
+
+
+=== 회차 및 좌석 동기화
+
+티켓 서버의 공연 회차 및 좌석 정보를 동기화한다.
+
+operation::performance-seat-sync[snippets='http-request,http-response']
+
+
+=== 티켓 동기화
+
+티켓 서버의 티켓을 동기화한다.
+
+operation::ticket-sync[snippets='http-request,http-response']
