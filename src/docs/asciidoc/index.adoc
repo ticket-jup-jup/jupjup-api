@@ -118,4 +118,4 @@ operation::performance-seat-sync[snippets='http-request,http-response']
 
 티켓 서버의 티켓을 동기화한다.
 
-operation::ticket-sync[snippets='http-request,http-response']
+operation::ticket-polling[snippets='http-request,http-response']
