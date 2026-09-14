@@ -12,12 +12,12 @@ import org.example.jubjubapi.reservation.exception.ReservationAccessDeniedExcept
 import org.example.jubjubapi.reservation.exception.ReservationAlreadyPaidException;
 import org.example.jubjubapi.reservation.exception.ReservationNotFoundException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
-import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.Ticket;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
+import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.example.jubjubapi.ticketserver.entity.TicketServerAccount;
 import org.example.jubjubapi.ticketserver.exception.TicketServerAccountNotLinkedException;
 import org.example.jubjubapi.ticketserver.repository.TicketServerAccountRepository;
@@ -127,7 +127,7 @@ public class ReservationTransactionService {
         }
 
         // 예약 상태 검증 후 변경
-        if(reservation.getStatus() == ReservationStatus.CONFIRMED) {
+        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
             throw new ReservationAlreadyPaidException();
         }
         reservation.cancel();

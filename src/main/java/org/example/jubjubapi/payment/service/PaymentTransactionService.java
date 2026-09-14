@@ -14,8 +14,8 @@ import org.example.jubjubapi.reservation.exception.InvalidPageRequestException;
 import org.example.jubjubapi.reservation.exception.ReservationAccessDeniedException;
 import org.example.jubjubapi.reservation.exception.ReservationNotFoundException;
 import org.example.jubjubapi.reservation.repository.ReservationRepository;
-import org.example.jubjubapi.ticket.client.TicketServerClient;
 import org.example.jubjubapi.ticket.entity.TicketStatus;
+import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -77,7 +77,7 @@ public class PaymentTransactionService {
 
         // 소유자검증
         Reservation reservation = payment.getReservation();
-        if(!reservation.isOwnedBy(userId)) {
+        if (!reservation.isOwnedBy(userId)) {
             throw new PaymentAccessDeniedException();
         }
 

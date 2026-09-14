@@ -1,7 +1,7 @@
 package org.example.jubjubapi.ticketserver.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.jubjubapi.ticket.client.TicketServerClient;
+import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.example.jubjubapi.ticketserver.dto.LinkTicketServerAccountRequest;
 import org.example.jubjubapi.ticketserver.dto.TicketServerAccountResponse;
 import org.example.jubjubapi.ticketserver.entity.TicketServerAccount;

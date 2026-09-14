@@ -1,0 +1,206 @@
+package org.example.jubjubapi.ticketserver.client;
+
+import lombok.extern.slf4j.Slf4j;
+import org.example.jubjubapi.payment.entity.PaymentMethod;
+import org.example.jubjubapi.performance.dto.TicketServerPerformance;
+import org.example.jubjubapi.program.dto.TicketServerProgram;
+import org.example.jubjubapi.seat.dto.TicketServerSeat;
+import org.example.jubjubapi.ticket.exception.TicketErrorCode;
+import org.example.jubjubapi.ticket.exception.TicketException;
+import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerConfirmRequest;
+import org.example.jubjubapi.ticketserver.client.dto.request.TicketServerReservationRequest;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerPerformanceResponse;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerProgramResponse;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerReservationResponse;
+import org.example.jubjubapi.ticketserver.client.dto.response.TicketServerSeatResponse;
+import org.example.jubjubapi.ticketserver.client.exception.*;
+import org.example.jubjubapi.ticketserver.exception.TicketServerUnavailableException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+
+import java.util.List;
+import java.util.Optional;
+
+@Slf4j
+@Component
+public class TicketServerClient {
+
+    private final RestClient restClient;
+
+    public TicketServerClient(
+            RestClient.Builder restClientBuilder,
+            @Value("${ticket-server.url}") String url,
+            @Value("${ticket-server.api-key}") String apiKey,
+            ClientHttpRequestFactory ticketServerRequestFactory) {
+        this.restClient = restClientBuilder
+                .baseUrl(url)
+                .defaultHeader("X-API-KEY", apiKey)
+                .requestFactory(ticketServerRequestFactory)
+                .build();
+    }
+
+    // 사용자 인증
+    public Optional<TicketServerUser> verify(String email, String password) {
+        VerifyResponse response;
+        try {
+            response = restClient.post()
+                    .uri("/api/auth/verify")
+                    .body(new VerifyRequest(email, password))
+                    .retrieve()
+                    .body(VerifyResponse.class);
+
+        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.NotFound e) {
+            return Optional.empty();                       // 인증 실패 = 정상적인 "아니오"
+
+        } catch (RestClientException e) {
+            log.warn("티켓 서버 사용자 인증 요청 실패: {}", e.getMessage());
+            throw new TicketServerUnavailableException();  // 연결 실패, 5xx, 그 외
+        }
+
+        if (response == null || response.data() == null || response.data().isEmpty()) {
+            return Optional.empty();
+        }
+
+        TicketServerUser user = response.data().get(0);
+        if (user.userId() == null) {
+            // 200 인데 userId 가 없으면 응답 형식이 바뀐 것. DB 에 null 넣지 않도록 여기서 막는다.
+            log.warn("티켓 서버 verify 응답에 userId 가 없음: {}", user);
+            throw new TicketServerUnavailableException();
+        }
+        return Optional.of(user);
+    }
+
+    record VerifyRequest(String email, String password) {
+    }
+
+    record VerifyResponse(boolean success, List<TicketServerUser> data) {
+    }
+
+    public record TicketServerUser(Long userId, String email, String name) {
+    }
+
+    // 프로그램 조회
+    public List<TicketServerProgram> getPrograms() {
+        TicketServerProgramResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri("/api/programs")
+                    .retrieve()
+                    .body(TicketServerProgramResponse.class);
+        } catch (RestClientException e) {
+            log.error("티켓서버 프로그램 조회 실패: {}", e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            throw new TicketServerProgramDataNotFoundException("티켓서버에 프로그램 데이터가 없습니다.");
+        }
+
+        return response.getData();
+    }
+
+    // 회차 조회
+    public List<TicketServerPerformance> getPerformances(Long programId) {
+        TicketServerPerformanceResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri("/api/performances?program={programId}", programId)
+                    .retrieve()
+                    .body(TicketServerPerformanceResponse.class);
+        } catch (RestClientException e) {
+            log.error("티켓서버 회차 조회 실패: programId={}, message={}", programId, e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            throw new TicketServerPerformanceDataNotFoundException("티켓서버에 회차 데이터가 없습니다.");
+        }
+
+        return response.getData();
+    }
+
+    // 좌석 조회
+    public List<TicketServerSeat> getSeats(Long performanceId) {
+        TicketServerSeatResponse response;
+
+        try {
+            response = restClient.get()
+                    .uri("/api/seats?performance={performanceId}", performanceId)
+                    .retrieve()
+                    .body(TicketServerSeatResponse.class);
+        } catch (RestClientException e) {
+            log.error("티켓서버 좌석 조회 실패: performanceId={}, message={}", performanceId, e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            throw new TicketServerSeatDataNotFoundException("티켓서버에 좌석 데이터가 없습니다.");
+        }
+
+        return response.getData();
+    }
+
+    // 임시 예약 요청
+    public Long createTemporaryReservation(Long externalUserId, Long externalTicketId) {
+        TicketServerReservationResponse response;
+        try {
+            response = restClient.post()
+                    .uri("/api/reservations")
+                    .body(new TicketServerReservationRequest(externalUserId, externalTicketId))
+                    .retrieve()
+                    .body(TicketServerReservationResponse.class);
+        } catch (HttpClientErrorException e) {
+            log.warn("티켓서버 임시예약 거부: status={}, userId={}, ticketId={}", e.getStatusCode(), externalUserId, externalTicketId);
+            throw new TicketException(TicketErrorCode.TICKET_NOT_AVAILABLE);
+        } catch (RestClientException e) {
+            log.error("티켓서버 통신 실패: userId={}, ticketId={}, message={}", externalUserId, externalTicketId, e.getMessage());
+            throw new TicketServerUnavailableException();
+        }
+
+        if (response == null || !response.isValid()) {
+            log.warn("티켓서버 임시예약 응답형식 오류: userId={}, ticketId={}", externalUserId, externalTicketId);
+            throw new TicketServerUnavailableException();
+        }
+
+        return response.extractReservationId();
+    }
+
+    // 예약 확정
+    public void confirmReservation(Long externalReservationId, PaymentMethod paymentMethod) {
+        try {
+            restClient.post()
+                    .uri("/api/reservations/{reservationId}/confirm", externalReservationId)
+                    .body(new TicketServerConfirmRequest(paymentMethod.name()))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (HttpClientErrorException e) {
+            log.warn("티켓서버 예약 확정 거부: externalReservationId={}, status={}", externalReservationId, e.getStatusCode());
+            throw new TicketServerRequestRejectedException();
+        } catch (RestClientException e) {
+            log.error("티켓서버 통신 실패: externalReservationId={}, message={}", externalReservationId, e.getMessage());
+            throw new TicketServerApiException();
+        }
+    }
+
+    // 예약 취소
+    public void cancelReservation(Long externalReservationId) {
+        try {
+            restClient.post()
+                    .uri("/api/reservations/{reservationId}/cancel", externalReservationId)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (HttpClientErrorException e) {
+            log.warn("티켓서버 예약 취소 거부: externalReservationId={}, status={}", externalReservationId, e.getStatusCode());
+            throw new TicketServerRequestRejectedException();
+        } catch (RestClientException e) {
+            log.error("티켓서버 통신 실패: externalReservationId={}, message={}", externalReservationId, e.getMessage());
+            throw new TicketServerApiException();
+        }
+    }
+}

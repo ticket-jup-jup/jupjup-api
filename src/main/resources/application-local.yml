@@ -34,5 +34,14 @@ ticket-server:
   url: http://localhost:8081
   api-key: ${TICKET_SERVER_API_KEY}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+  endpoint:
+    health:
+      show-details: always
+
 notification:
   stub-user-ids: ""        # 세션 4 e2e 검증용. 예지님 파트 구현 후 삭제

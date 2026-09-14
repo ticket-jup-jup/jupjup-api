@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.jubjubapi.global.entity.BaseEntity;
+import org.example.jubjubapi.program.entity.Program;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -23,30 +24,31 @@ import java.util.Objects;
 )
 public class Performance extends BaseEntity {
     @Id
-    @Column(name = "performance_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
             name = "program_id",
             nullable = false,
             updatable = false
     )
-    private Long programId;
+    private Program program;
+
+    private Long externalPerformanceId;
+
     @Column(
             name = "start_at",
             nullable = false
     )
     private LocalDateTime startAt;
-    @Column(
-            name = "program_name",
-            nullable = false,
-            length = 255
-    )
-    private String programName;
+
     @Column(
             name = "end_at",
             nullable = false
     )
     private LocalDateTime endAt;
+
     @Column(
             name = "venue",
             nullable = false,
@@ -62,28 +64,24 @@ public class Performance extends BaseEntity {
     )
     private PerformanceStatus status;
 
+    private LocalDateTime deletedAt;
+
     public Performance(
-            Long id,
-            Long programId,
+            Program program,
+            Long externalPerformanceId,
             LocalDateTime startAt,
             LocalDateTime endAt,
             String venue,
-            PerformanceStatus status,
-            String programName
+            PerformanceStatus status
     ) {
-        this.id = Objects.requireNonNull(
-                id,
-                "회차 ID는 필수입니다."
+        this.program = Objects.requireNonNull(
+                program,
+                "프로그램은 필수입니다."
         );
 
-        this.programId = Objects.requireNonNull(
-                programId,
-                "프로그램 ID는 필수입니다."
-        );
-
-        this.programName = Objects.requireNonNull(
-                programName,
-                "프로그램명은 필수입니다."
+        this.externalPerformanceId = Objects.requireNonNull(
+                externalPerformanceId,
+                "티켓서버 회차 ID는 필수입니다."
         );
 
         this.startAt = Objects.requireNonNull(
@@ -117,5 +115,9 @@ public class Performance extends BaseEntity {
         this.endAt = Objects.requireNonNull(endAt);
         this.venue = Objects.requireNonNull(venue);
         this.status = Objects.requireNonNull(status);
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }
