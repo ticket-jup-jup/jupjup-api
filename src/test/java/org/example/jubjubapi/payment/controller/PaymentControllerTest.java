@@ -169,4 +169,113 @@ public class PaymentControllerTest {
                 ));
     }
 
+    @Test
+    void 결제_전체_조회() throws Exception {
+
+        LocalDateTime paidAt =
+                LocalDateTime.of(2026, 9, 16, 5, 30);
+
+        TicketInfo ticketInfo =
+                TicketInfo.builder()
+                        .ticketId(100L)
+                        .performanceId(200L)
+                        .price(BigDecimal.valueOf(150000))
+                        .build();
+
+        PaymentGetResponse response =
+                PaymentGetResponse.builder()
+                        .id(1L)
+                        .amount(BigDecimal.valueOf(150000))
+                        .paymentMethod(PaymentMethod.CARD)
+                        .status(PaymentStatus.COMPLETED)
+                        .paidAt(paidAt)
+                        .reservationId(10L)
+                        .ticket(ticketInfo)
+                        .build();
+
+        given(
+                paymentTransactionService.getAllPayment(
+                        1L,
+                        0,
+                        10
+                )
+        ).willReturn(List.of(response));
+
+        mockMvc.perform(
+                        get("/api/payments")
+                                .with(authentication(userToken()))
+                                .param("page", "0")
+                                .param("size", "10")
+                )
+                .andExpect(status().isOk())
+
+                .andDo(document(
+                        "payment-list",
+
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        queryParameters(
+                                parameterWithName("page")
+                                        .optional()
+                                        .description("페이지 번호. 기본값 0"),
+
+                                parameterWithName("size")
+                                        .optional()
+                                        .description("페이지 크기. 기본값 10")
+                        ),
+
+                        responseFields(
+                                fieldWithPath("success")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("성공 여부"),
+
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("결제 목록"),
+
+                                fieldWithPath("data[].id")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("결제 ID"),
+
+                                fieldWithPath("data[].amount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("결제 금액"),
+
+                                fieldWithPath("data[].paymentMethod")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결제 수단"),
+
+                                fieldWithPath("data[].status")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결제 상태"),
+
+                                fieldWithPath("data[].paidAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결제 일시"),
+
+                                fieldWithPath("data[].reservationId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("예약 ID"),
+
+                                fieldWithPath("data[].ticket.ticketId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 ID"),
+
+                                fieldWithPath("data[].ticket.performanceId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("공연 회차 ID"),
+
+                                fieldWithPath("data[].ticket.price")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 가격"),
+
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .optional()
+                                        .description("성공 시 null")
+                        )
+                ));
+    }
+
 }
