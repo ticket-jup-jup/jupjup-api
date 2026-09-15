@@ -3,17 +3,19 @@ package org.example.jubjubapi.global.internal.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.performance.service.PerformanceService;
 import org.example.jubjubapi.program.service.ProgramService;
+import org.example.jubjubapi.ticket.service.TicketService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/internal")
+@RequestMapping("/api/internal")
 public class InternalSyncController {
 
     private final ProgramService programService;
     private final PerformanceService performanceService;
+    private final TicketService ticketService;
 
     // 티켓서버 프로그램 수동 동기화
     @PostMapping("/programs/sync")
@@ -25,5 +27,11 @@ public class InternalSyncController {
     @PostMapping("/performances/sync")
     public void syncPerformances() {
         performanceService.getTicketServerPerformanceAndSeat();
+    }
+
+    // 티켓서버 티켓 수동 동기화
+    @PostMapping("/tickets/sync")
+    public void syncTickets() {
+        ticketService.pollTickets();
     }
 }
