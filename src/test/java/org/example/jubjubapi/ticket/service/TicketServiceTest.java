@@ -1,4 +1,4 @@
-package org.example.jubjubapi.ticket;
+package org.example.jubjubapi.ticket.service;
 
 import org.example.jubjubapi.global.exception.ServiceException;
 import org.example.jubjubapi.notification.event.TicketCanceledEvent;
@@ -14,7 +14,6 @@ import org.example.jubjubapi.ticket.entity.TicketStatus;
 import org.example.jubjubapi.ticket.exception.TicketErrorCode;
 import org.example.jubjubapi.ticket.exception.TicketException;
 import org.example.jubjubapi.ticket.repository.TicketRepository;
-import org.example.jubjubapi.ticket.service.TicketService;
 import org.example.jubjubapi.ticketserver.client.TicketServerClient;
 import org.example.jubjubapi.user.entity.User;
 import org.example.jubjubapi.user.repository.UserRepository;
