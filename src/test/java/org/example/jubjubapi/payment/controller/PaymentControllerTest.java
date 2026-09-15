@@ -382,4 +382,71 @@ public class PaymentControllerTest {
                 ));
     }
 
+    @Test
+    void 결제_취소() throws Exception {
+
+        PaymentCancelResponse response =
+                PaymentCancelResponse.builder()
+                        .id(1L)
+                        .status(PaymentStatus.REFUNDED)
+                        .amount(BigDecimal.valueOf(150000))
+                        .build();
+
+        given(
+                paymentTransactionService.cancel(
+                        1L,
+                        1L
+                )
+        ).willReturn(response);
+
+        mockMvc.perform(
+                        post(
+                                "/api/payments/{paymentId}/cancel",
+                                1L
+                        )
+                                .with(authentication(userToken()))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(document(
+                        "payment-cancel",
+
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        pathParameters(
+                                parameterWithName("paymentId")
+                                        .description("취소할 결제 ID")
+                        ),
+
+                        responseFields(
+                                fieldWithPath("success")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("성공 여부"),
+
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("환불 결과"),
+
+                                fieldWithPath("data[].id")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("결제 ID"),
+
+                                fieldWithPath("data[].status")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결제 상태. 환불 완료 시 REFUNDED"),
+
+                                fieldWithPath("data[].amount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("환불 금액"),
+
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .optional()
+                                        .description("성공 시 null")
+                        )
+                ));
+    }
 }
+
+
