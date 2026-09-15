@@ -3,6 +3,7 @@ package org.example.jubjubapi.global.internal.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.jubjubapi.performance.service.PerformanceService;
 import org.example.jubjubapi.program.service.ProgramService;
+import org.example.jubjubapi.reservation.service.ReservationService;
 import org.example.jubjubapi.ticket.service.TicketService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ public class InternalSyncController {
     private final ProgramService programService;
     private final PerformanceService performanceService;
     private final TicketService ticketService;
+    private final ReservationService reservationService;
 
     // 티켓서버 프로그램 수동 동기화
     @PostMapping("/programs/sync")
@@ -33,5 +35,11 @@ public class InternalSyncController {
     @PostMapping("/tickets/sync")
     public void syncTickets() {
         ticketService.pollTickets();
+    }
+
+    // 결제시간 만료된 항목 상태값 수동 변경
+    @PostMapping("/reservations/status")
+    public void handleExpireReservations() {
+        reservationService.expireReservations();
     }
 }

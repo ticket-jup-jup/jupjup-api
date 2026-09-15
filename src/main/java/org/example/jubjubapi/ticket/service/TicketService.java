@@ -113,8 +113,8 @@ public class TicketService {
                                             ticket.getPrice()
                                     );
 
-                                    // 기존 상태 SOLD + 조회된 상태 AVAILABLE => 취소표 알림 이벤트 발생
-                                    if (previousStatus == TicketStatus.SOLD
+                                    // 기존 상태 RESERVED/SOLD + 조회된 상태 AVAILABLE => 취소표 알림 이벤트 발생
+                                    if ((previousStatus == TicketStatus.SOLD || previousStatus == TicketStatus.RESERVED)
                                             && ticket.getStatus() == TicketStatus.AVAILABLE) {
                                         publishTicketCanceledEvent(
                                                 existingTicket,

@@ -4,6 +4,7 @@ import org.example.jubjubapi.global.security.config.SecurityConfig;
 import org.example.jubjubapi.global.security.jwt.JwtProvider;
 import org.example.jubjubapi.performance.service.PerformanceService;
 import org.example.jubjubapi.program.service.ProgramService;
+import org.example.jubjubapi.reservation.service.ReservationService;
 import org.example.jubjubapi.ticket.service.TicketService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.verify;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,6 +36,9 @@ class SchedulerControllerTest {
 
     @MockitoBean
     TicketService ticketService;
+
+    @MockitoBean
+    ReservationService reservationService;
 
     @MockitoBean
     JwtProvider jwtProvider;
@@ -89,5 +91,21 @@ class SchedulerControllerTest {
                 ));
 
         verify(ticketService).pollTickets();
+    }
+
+    @Test
+    void 결제_시간_만료_데이터_상태_변경() throws Exception {
+
+        mockMvc.perform(
+                        post("/api/internal/scheduler/reservations-expire")
+                )
+                .andExpect(status().isOk())
+                .andDo(document(
+                        "reservation-expire",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())
+                ));
+
+        verify(reservationService).expireReservations();
     }
 }

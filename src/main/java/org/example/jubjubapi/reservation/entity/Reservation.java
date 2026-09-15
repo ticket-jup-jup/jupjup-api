@@ -79,7 +79,7 @@ public class Reservation extends BaseEntity {
         this.status = ReservationStatus.CONFIRMED;
     }
 
-    // 만료 시간 초과로 인한 자동 만료 (스케줄러 구현 후 호출 예정)
+    // 만료 시간 초과로 인한 자동 만료
     public void expire() {
         if (this.status != ReservationStatus.PENDING) {
             throw new ReservationNotPendingException("결제 만료된 예약입니다.");
