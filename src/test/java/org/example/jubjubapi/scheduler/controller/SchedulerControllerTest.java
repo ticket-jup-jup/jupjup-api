@@ -97,7 +97,7 @@ class SchedulerControllerTest {
     void 결제_시간_만료_데이터_상태_변경() throws Exception {
 
         mockMvc.perform(
-                        post("/api/internal/scheduler/reservations/expire")
+                        post("/api/internal/scheduler/reservations-expire")
                 )
                 .andExpect(status().isOk())
                 .andDo(document(
