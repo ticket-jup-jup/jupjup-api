@@ -278,4 +278,108 @@ public class PaymentControllerTest {
                 ));
     }
 
+    @Test
+    void 결제_단건_조회() throws Exception {
+
+        LocalDateTime paidAt =
+                LocalDateTime.of(2026, 9, 16, 5, 30);
+
+        TicketInfo ticketInfo =
+                TicketInfo.builder()
+                        .ticketId(100L)
+                        .performanceId(200L)
+                        .price(BigDecimal.valueOf(150000))
+                        .build();
+
+        PaymentGetResponse response =
+                PaymentGetResponse.builder()
+                        .id(1L)
+                        .amount(BigDecimal.valueOf(150000))
+                        .paymentMethod(PaymentMethod.CARD)
+                        .status(PaymentStatus.COMPLETED)
+                        .paidAt(paidAt)
+                        .reservationId(10L)
+                        .ticket(ticketInfo)
+                        .build();
+
+        given(
+                paymentTransactionService.getOnePayment(
+                        1L,
+                        1L
+                )
+        ).willReturn(response);
+
+        mockMvc.perform(
+                        get(
+                                "/api/payments/{paymentId}",
+                                1L
+                        )
+                                .with(authentication(userToken()))
+                )
+                .andExpect(status().isOk())
+
+                .andDo(document(
+                        "payment-detail",
+
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        pathParameters(
+                                parameterWithName("paymentId")
+                                        .description("조회할 결제 ID")
+                        ),
+
+                        responseFields(
+                                fieldWithPath("success")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("성공 여부"),
+
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("결제 정보"),
+
+                                fieldWithPath("data[].id")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("결제 ID"),
+
+                                fieldWithPath("data[].amount")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("결제 금액"),
+
+                                fieldWithPath("data[].paymentMethod")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결제 수단"),
+
+                                fieldWithPath("data[].status")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결제 상태"),
+
+                                fieldWithPath("data[].paidAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("결제 일시"),
+
+                                fieldWithPath("data[].reservationId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("예약 ID"),
+
+                                fieldWithPath("data[].ticket.ticketId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 ID"),
+
+                                fieldWithPath("data[].ticket.performanceId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("공연 회차 ID"),
+
+                                fieldWithPath("data[].ticket.price")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 가격"),
+
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .optional()
+                                        .description("성공 시 null")
+                        )
+                ));
+    }
+
 }
