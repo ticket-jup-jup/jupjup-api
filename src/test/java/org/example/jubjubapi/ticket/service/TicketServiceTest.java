@@ -380,6 +380,62 @@ class TicketServiceTest {
     }
 
     @Test
+    void 티켓_상태값이_RESERVED에서_AVAILABLE로_바뀌면_취소표_알림_이벤트_발행() {
+        // given
+        Long performanceId = 10L;
+        Long externalPerformanceId = 100L;
+
+        TicketServerTicket ticketServerTicket = new TicketServerTicket(
+                101L,
+                externalPerformanceId,
+                LocalDateTime.of(2026, 9, 10, 19, 30),
+                LocalDateTime.of(2026, 9, 10, 22, 0),
+                "잠실실내체육관",
+                1L,
+                new BigDecimal("100000.00"),
+                TicketStatus.AVAILABLE,
+                LocalDateTime.of(2026, 9, 3, 10, 0),
+                LocalDateTime.of(2026, 9, 3, 11, 0)
+        );
+
+        ticket = Ticket.builder()
+                .externalTicketId(101L)
+                .performanceId(performanceId)
+                .price(new BigDecimal("100000.00"))
+                .status(TicketStatus.RESERVED)
+                .build();
+
+        ReflectionTestUtils.setField(ticket, "id", 1L);
+
+        when(performanceWatchService.getActivePerformanceIds())
+                .thenReturn(List.of(performanceId));
+        when(performanceService.getExternalPerformanceId(performanceId))
+                .thenReturn(externalPerformanceId);
+        when(ticketServerClient.getTickets(externalPerformanceId))
+                .thenReturn(List.of(ticketServerTicket));
+        when(tickets.findByExternalTicketId(ticketServerTicket.getId()))
+                .thenReturn(Optional.of(ticket));
+
+        // when
+        service.pollTickets();
+
+        // then
+        assertEquals(TicketStatus.AVAILABLE, ticket.getStatus());
+
+        ArgumentCaptor<TicketCanceledEvent> eventCaptor =
+                ArgumentCaptor.forClass(TicketCanceledEvent.class);
+
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        TicketCanceledEvent event = eventCaptor.getValue();
+
+        assertNotNull(event.eventId());
+        assertEquals(ticket.getId(), event.ticketId());
+        assertEquals(performanceId, event.performanceId());
+        assertNotNull(event.canceledAt());
+    }
+
+    @Test
     void Webhook으로_들어온_회차가_취소표_알림_설정에_없으면_패스() {
         // given
         Long externalTicketId = 101L;
