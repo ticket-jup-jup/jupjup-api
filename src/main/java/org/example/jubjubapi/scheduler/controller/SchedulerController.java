@@ -38,7 +38,7 @@ public class SchedulerController {
     }
 
     // 임시예약 결제 시간 만료
-    @PostMapping("/reservations/expire")
+    @PostMapping("/reservations-expire")
     public void expireReservations() {
         reservationService.expireReservations();
     }
