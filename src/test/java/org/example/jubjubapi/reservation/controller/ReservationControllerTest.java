@@ -359,10 +359,70 @@ class ReservationControllerTest {
                         )
                 ));
     }
+    @Test
+    void 예약_취소() throws Exception {
 
+        ReservationCancelResponse response =
+                ReservationCancelResponse.builder()
+                        .id(1L)
+                        .status(ReservationStatus.CANCELLED)
+                        .build();
 
+        given(
+                reservationTransactionService.cancel(
+                        1L,
+                        1L
+                )
+        ).willReturn(response);
 
+        mockMvc.perform(
+                        post(
+                                "/api/reservations/{reservationId}/cancel",
+                                1L
+                        )
+                                .with(authentication(userToken()))
+                )
+                .andExpect(status().isOk())
 
+                .andDo(document(
+                        "reservation-cancel",
 
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
 
+                        pathParameters(
+                                parameterWithName("reservationId")
+                                        .description("취소할 예약 ID")
+                        ),
+
+                        responseFields(
+                                fieldWithPath("success")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("성공 여부"),
+
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("취소된 예약 정보"),
+
+                                fieldWithPath("data[].id")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("예약 ID"),
+
+                                fieldWithPath("data[].status")
+                                        .type(JsonFieldType.STRING)
+                                        .description("예약 상태. 취소 완료 시 CANCELLED"),
+
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .optional()
+                                        .description("성공 시 null")
+                        )
+                ));
+    }
 }
+
+
+
+
+
+
