@@ -258,6 +258,108 @@ class ReservationControllerTest {
                 ));
     }
 
+    @Test
+    void 내_예약_목록_조회() throws Exception {
+
+        LocalDateTime createdAt =
+                LocalDateTime.of(2026, 9, 16, 5, 0);
+
+        LocalDateTime expiresAt =
+                createdAt.plusMinutes(10);
+
+        TicketInfo ticketInfo =
+                TicketInfo.builder()
+                        .ticketId(10L)
+                        .performanceId(100L)
+                        .price(BigDecimal.valueOf(150000))
+                        .build();
+
+        ReservationGetResponse response =
+                ReservationGetResponse.builder()
+                        .id(1L)
+                        .status(ReservationStatus.PENDING)
+                        .expiresAt(expiresAt)
+                        .createdAt(createdAt)
+                        .ticket(ticketInfo)
+                        .build();
+
+        given(
+                reservationTransactionService.getMyReservation(
+                        1L,
+                        0,
+                        10
+                )
+        ).willReturn(List.of(response));
+
+        mockMvc.perform(
+                        get("/api/reservations/my")
+                                .with(authentication(userToken()))
+                                .param("page", "0")
+                                .param("size", "10")
+                )
+                .andExpect(status().isOk())
+
+                .andDo(document(
+                        "reservation-list",
+
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+
+                        queryParameters(
+                                parameterWithName("page")
+                                        .optional()
+                                        .description("페이지 번호. 기본값 0"),
+
+                                parameterWithName("size")
+                                        .optional()
+                                        .description("페이지 크기. 기본값 10")
+                        ),
+
+                        responseFields(
+                                fieldWithPath("success")
+                                        .type(JsonFieldType.BOOLEAN)
+                                        .description("성공 여부"),
+
+                                fieldWithPath("data")
+                                        .type(JsonFieldType.ARRAY)
+                                        .description("예약 목록"),
+
+                                fieldWithPath("data[].id")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("예약 ID"),
+
+                                fieldWithPath("data[].status")
+                                        .type(JsonFieldType.STRING)
+                                        .description("예약 상태"),
+
+                                fieldWithPath("data[].expiresAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("예약 만료 일시"),
+
+                                fieldWithPath("data[].createdAt")
+                                        .type(JsonFieldType.STRING)
+                                        .description("예약 생성 일시"),
+
+                                fieldWithPath("data[].ticket.ticketId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 ID"),
+
+                                fieldWithPath("data[].ticket.performanceId")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("공연 회차 ID"),
+
+                                fieldWithPath("data[].ticket.price")
+                                        .type(JsonFieldType.NUMBER)
+                                        .description("티켓 가격"),
+
+                                fieldWithPath("error")
+                                        .type(JsonFieldType.OBJECT)
+                                        .optional()
+                                        .description("성공 시 null")
+                        )
+                ));
+    }
+
 
 
 
