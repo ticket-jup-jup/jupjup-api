@@ -134,6 +134,12 @@ operation::reservation-list[snippets='http-request,query-parameters,http-respons
 === 예약 취소
 operation::reservation-cancel[snippets='path-parameters,http-request,http-response,response-fields']
 
+=== 임시예약 결제 시간 만료
+
+임시 예약된 티켓의 결제 만료 시간이 지나면 예약 상태를 만료로 변경한다.
+
+operation::reservation-expire[snippets='http-request,http-response']
+
 
 == 결제
 
@@ -149,8 +155,4 @@ operation::payment-detail[snippets='path-parameters,http-request,http-response,r
 === 결제 취소(환불)
 operation::payment-cancel[snippets='path-parameters,http-request,http-response,response-fields']
 
-=== 임시예약 결제 시간 만료
 
-임시 예약된 티켓의 결제 만료 시간이 지나면 예약 상태를 만료로 변경한다.
-
-operation::reservation-expire[snippets='http-request,http-response']
