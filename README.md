@@ -132,7 +132,7 @@ JupJup은 실제 예매 서비스를 가정한 **티켓 서버**와
 
 
 <p align="center">
-  <img src="./docs/images/scheduler-architecture.png" width="1000" alt="JupJup Scheduler Architecture">
+  <img src="./docs/images/scheduler-architecture.png" width="1000">
 </p>
 
 
