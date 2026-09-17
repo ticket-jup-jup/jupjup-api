@@ -42,6 +42,7 @@ JupJup은 사용자가 직접 반복해서 좌석을 확인해야 하는 불편�
 | <a href="https://github.com/heeheepark"><img src="https://github.com/heeheepark.png" width="100" alt="박주희"></a> | <a href="https://github.com/juntori"><img src="https://github.com/juntori.png" width="80" alt="박준용"></a> | <a href="https://github.com/mirumeow"><img src="https://github.com/mirumeow.png" width="80" alt="김예슬"></a> | <a href="https://github.com/Hseok-2"><img src="https://github.com/Hseok-2.png" width="80" alt="최형석"></a> |
 
 <br>
+
 ### 🔗 Repository
 
 | Repository | 역할 |
